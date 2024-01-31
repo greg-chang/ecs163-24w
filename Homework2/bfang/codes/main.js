@@ -13,7 +13,7 @@ let parallelMargin = {top: 10, right: 30, bottom: 30, left: 60},
 let pieLeft = 0, pieTop = 0;
 let pieMargin = {top: 10, right: 30, bottom: 30, left: 60},
     pieWidth = 400 - pieMargin.left - pieMargin.right,
-    pieHeight = 250 - pieMargin.top - pieMargin.bottom;
+    pieHeight = 350 - pieMargin.top - pieMargin.bottom;
 
 function processingData(rawData) {
     // Data Processing
@@ -166,7 +166,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     console.log(error);
 });
 
-// Plot 2: Pie Chart Interms of each Pokemon's type_1
+// Plot 2: Pie Chart Interms of each Pokemon's Type_1
 d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     // Data Processing
     allTypeOne = [];
@@ -181,6 +181,51 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     })
     console.log(processedData);
 
+    // Select svg
+    const svg = d3.select("svg")
+
+    const g2 = svg.append("g")
+                .attr("width", pieWidth + pieMargin.left + pieMargin.right)
+                .attr("height", pieHeight + pieMargin.top + pieMargin.bottom)
+                .attr("transform", `translate(${pieMargin.left}, ${pieMargin.top})`);
+
+    const radius = Math.min(pieWidth + pieMargin.left + pieMargin.right, pieHeight + pieMargin.top + pieMargin.bottom) / 2 - pieMargin.right;
+
+    // set the color scale
+    const color = d3.scaleOrdinal()
+    .range(d3.schemeSet2);
+
+    // Compute the position of each group on the pie:
+    const pie = d3.pie()
+    .value(function(d) {return d[1]})
+    const data_ready = pie(Object.entries(processedData))
+    // Now I know that group A goes from 0 degrees to x degrees and so on.
+
+    // shape helper to build arcs:
+    const arcGenerator = d3.arc()
+    .innerRadius(0)
+    .outerRadius(radius)
+
+    // Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
+    g2
+    .selectAll('mySlices')
+    .data(data_ready)
+    .join('path')
+    .attr('d', arcGenerator)
+    .attr('fill', function(d){ return(color(d.data[0])) })
+    .attr("stroke", "black")
+    .style("stroke-width", "2px")
+    .style("opacity", 0.7)
+
+    // Now add the annotation. Use the centroid method to get the best coordinates
+    g2
+    .selectAll('mySlices')
+    .data(data_ready)
+    .join('text')
+    .text(function(d){ return "grp " + d.data[0]})
+    .attr("transform", function(d) { return `translate(${arcGenerator.centroid(d)})`})
+    .style("text-anchor", "middle")
+    .style("font-size", 17)
 
 }).catch(function(error){
     console.log(error);
