@@ -9,13 +9,15 @@ let parallelMargin = {top: 10, right: 30, bottom: 30, left: 60},
     parallelWidth = width - parallelMargin.left - parallelMargin.right,
     parallelHeight = height - 450 - parallelMargin.top - parallelMargin.bottom;
 
-// Plot 1: Parallel Coordinates Graph
-d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
+// Dimensions for the pie chart
+let pieLeft = 0, pieTop = 0;
+let pieMargin = {top: 10, right: 30, bottom: 30, left: 60},
+    pieWidth = 400 - pieMargin.left - pieMargin.right,
+    pieHeight = 250 - pieMargin.top - pieMargin.bottom;
 
+function processingData(rawData) {
     // Data Processing
     allTypeOne = []
-    // Print out the data to see what it looks like
-    console.log("rawData", rawData);
     // Transform data to number, string, and boolean values
     rawData.forEach(function(d) {  
         d.Number = Number(d.Number);
@@ -37,16 +39,22 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
             allTypeOne.push(d.Type_1);
         }
     });
-    console.log("allTypeOne", allTypeOne);
+
     // Drop two types that have incomplete and trivial attributes
     rawData.forEach(d => {
         delete d.Type_2;
         delete d.Egg_Group_2;
     });
 
-    // Check is the rawDate is properly processed
-    console.log(rawData);
-    console.log(rawData.columns);
+    return [allTypeOne, rawData];
+}
+
+// Plot 1: Parallel Coordinates Graph
+d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
+
+    // Data Processing
+    allTypeOne = [];
+    [allTypeOne, rawData] = processingData(rawData);
 
     // Select svg
     const svg = d3.select("svg")
@@ -79,8 +87,6 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .domain( d3.extent(rawData, function(d) { return +d[name]; }))
         .range([parallelHeight, 0]);
     }
-    // Check y
-    console.log(y);
 
     // Build the X scale -> it find the best position for each Y axis
     const x = d3.scalePoint()
@@ -160,8 +166,21 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     console.log(error);
 });
 
-// Plot 2: Pie Chart Interms of each Pokemon's body style
+// Plot 2: Pie Chart Interms of each Pokemon's type_1
 d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
+    // Data Processing
+    allTypeOne = [];
+    [allTypeOne, rawData] = processingData(rawData);
+    processedData = {}
+    rawData.forEach(d => {
+        if (d.Type_1 in processedData) {
+            processedData[d.Type_1] += 1;
+        } else {
+            processedData[d.Type_1] = 1;
+        }
+    })
+    console.log(processedData);
+
 
 }).catch(function(error){
     console.log(error);
