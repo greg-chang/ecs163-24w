@@ -10,8 +10,8 @@ let parallelMargin = {top: 10, right: 30, bottom: 30, left: 60},
     parallelHeight = height - 450 - parallelMargin.top - parallelMargin.bottom;
 
 // Dimensions for the pie chart
-let pieLeft = 0, pieTop = 0;
-let pieMargin = {top: 10, right: 30, bottom: 30, left: 60},
+let pieLeft = 100, pieTop = 0;
+let pieMargin = {top: 60, right: 30, bottom: 30, left: 80},
     pieWidth = 400 - pieMargin.left - pieMargin.right,
     pieHeight = 350 - pieMargin.top - pieMargin.bottom;
 
@@ -66,18 +66,9 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
 
     // For plot 1, we only care about these attributes
     let dimensions = ["Total", "HP", "Attack", "Defense", "Sp_Atk", "Sp_Def", "Speed"];
-    // Generate different colors for each type
-    randomColors = [
-        "#440154", "#3e4989", "#31688e", "#26838f", "#1f9e89", "#35b779",
-        "#6ece58", "#b5de2b", "#fde725", "#fdae61", "#fd8d3c", "#f16913",
-        "#d94801", "#a63603", "#7f2704", "#440154", "#21908d", "#fde725"
-      ];
-      
-    // Color scale: give me a specie name, I return a color
-    const color = d3.scaleOrdinal()
-        .domain(allTypeOne)
-        .range(randomColors);
 
+    const color = d3.scaleOrdinal()
+        .range(d3.schemeSet2);
 
     // store y objects
     const y = {};
@@ -179,17 +170,16 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
             processedData[d.Type_1] = 1;
         }
     })
-    console.log(processedData);
 
     // Select svg
     const svg = d3.select("svg")
 
+    const radius = Math.min(pieWidth + pieMargin.left + pieMargin.right, pieHeight + pieMargin.top + pieMargin.bottom) / 2 - pieMargin.right;
+
     const g2 = svg.append("g")
                 .attr("width", pieWidth + pieMargin.left + pieMargin.right)
                 .attr("height", pieHeight + pieMargin.top + pieMargin.bottom)
-                .attr("transform", `translate(${pieMargin.left}, ${pieMargin.top})`);
-
-    const radius = Math.min(pieWidth + pieMargin.left + pieMargin.right, pieHeight + pieMargin.top + pieMargin.bottom) / 2 - pieMargin.right;
+                .attr("transform", `translate(${pieMargin.left + radius + pieLeft}, ${pieMargin.top + radius})`);
 
     // set the color scale
     const color = d3.scaleOrdinal()
@@ -203,29 +193,60 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
 
     // shape helper to build arcs:
     const arcGenerator = d3.arc()
-    .innerRadius(0)
-    .outerRadius(radius)
+                            .innerRadius(0)
+                            .outerRadius(radius)
 
     // Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
     g2
-    .selectAll('mySlices')
-    .data(data_ready)
-    .join('path')
-    .attr('d', arcGenerator)
-    .attr('fill', function(d){ return(color(d.data[0])) })
-    .attr("stroke", "black")
-    .style("stroke-width", "2px")
-    .style("opacity", 0.7)
+        .selectAll('mySlices')
+        .data(data_ready)
+        .join('path')
+        .attr('d', arcGenerator)
+        .attr('fill', function(d){ return(color(d.data[0])) })
+        .attr("stroke", "black")
+        .style("stroke-width", "2px")
+        .style("opacity", 0.7)
 
-    // Now add the annotation. Use the centroid method to get the best coordinates
-    g2
-    .selectAll('mySlices')
-    .data(data_ready)
-    .join('text')
-    .text(function(d){ return "grp " + d.data[0]})
-    .attr("transform", function(d) { return `translate(${arcGenerator.centroid(d)})`})
-    .style("text-anchor", "middle")
-    .style("font-size", 17)
+    // Add a legend to the side of the parallel coordinates plot
+    const legend = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${pieMargin.left}, ${pieMargin.top})`);
+
+    const legendRectSize = 12;
+    const legendSpacing = 4;
+
+    // Create legend items
+    const legendItems = legend.selectAll(".legend-item")
+        .data(allTypeOne)
+        .enter()
+        .append("g")
+        .attr("class", "legend-item")
+        .attr("transform", function (d, i) { return `translate(0, ${i * (legendRectSize + legendSpacing)})`; });
+
+    // Append rectangles to the legend items
+    legendItems.append("rect")
+        .attr("width", legendRectSize)
+        .attr("height", legendRectSize)
+        .style("fill", function (d) { return color(d); });
+
+    // Append text to the legend items
+    legendItems.append("text")
+        .attr("x", legendRectSize + legendSpacing)
+        .attr("y", legendRectSize - legendSpacing)
+        .text(function (d) { return d; });
+
+    // Query the leftmost and rightmost position to location the title
+    const legendLeftPosition = pieMargin.left;
+    const pieRightPosition = pieMargin.left + radius * 2 + pieLeft;
+
+    // Add title
+    svg.append("text")
+        .attr("x", (legendLeftPosition + pieRightPosition) / 2)
+        .attr("y", pieMargin.top * 2 / 3)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .text("Pokemon's Composition in the Whole Dataset");
 
 }).catch(function(error){
     console.log(error);
