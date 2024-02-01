@@ -1,293 +1,276 @@
-let abFilter = 25
-const width = window.innerWidth;
-const height = window.innerHeight;
+let abFilter = 25;
 
-let scatterLeft = 0, scatterTop = 0;
-let scatterMargin = {top: 10, right: 30, bottom: 30, left: 60},
-    scatterWidth = 400 - scatterMargin.left - scatterMargin.right,
-    scatterHeight = 350 - scatterMargin.top - scatterMargin.bottom;
+// Adjust the width and height of the SVG element
+const svgWidth = 800;
+const svgHeight = 350;
+const margin = { top: 50, right: 30, bottom: 30, left: 100 };
+const graph_width = svgWidth - margin.left - margin.right - 95;
+const graph_height = svgHeight - margin.top - margin.bottom - 20;
 
-let distrLeft = 400, distrTop = 0;
-let distrMargin = {top: 10, right: 30, bottom: 30, left: 60},
-    distrWidth = 400 - distrMargin.left - distrMargin.right,
-    distrHeight = 350 - distrMargin.top - distrMargin.bottom;
-
-let teamLeft = 0, teamTop = 400;
-let teamMargin = {top: 10, right: 30, bottom: 30, left: 60},
-    teamWidth = width - teamMargin.left - teamMargin.right,
-    teamHeight = height-450 - teamMargin.top - teamMargin.bottom;
+// Explicitly append the SVG to the body and set its position
 
 
 d3.csv("data/StudentMentalhealth.csv").then(healthData => {
-    console.log("rawData", healthData);
-
-   
+    console.log("OG DATA: ",healthData);
     const healthData2 = healthData.map(d => {
-    return {
-        "dataGenderChoice": d["Choose your gender"],
-        "dataAge": +d["Age"], // Convert to a number
-        "dataCourse": d["What is your course?"],
-        "dataCurYearStudy": d["Your current year of Study"],
-        "dataCGPA": +d["What is your CGPA?"], // Convert to a number
-        "dataDepression": d["Do you have Depression?"] === "Yes" ? 1 : 0, // Convert to a boolean
-        "dataAnxiety": d["Do you have Anxiety?"] === "Yes" ? 1 : 0, // Convert to a boolean
+        return {
+            "dataGenderChoice": d["Choose your gender"],
+            "dataAge": +d["Age"], // Convert to a number
+            "dataCourse": d["What is your course?"],
+            "dataCurYearStudy": d["Your current year of Study"],
+            "dataCGPA": d["What is your CGPA?"], // Convert to a number
+            "dataDepression": (d["Do you have Depression?"] === "Yes") ? 1 : 0, // Convert to a boolean
+            "dataAnxiety": (d["Do you have Anxiety?"] === "Yes") ? 1 : 0, // Convert to a boolean
+        };
+    });
+    console.log("DATA: ",healthData2)
+
+    // Count the number of people in each GPA range with and without depression
+    const rangeCounts = {
+        '0 - 1.99': { 'No Depression': 0, 'Depression': 0 },
+        '2.00 - 2.49': { 'No Depression': 0, 'Depression': 0 },
+        '2.50 - 2.99': { 'No Depression': 0, 'Depression': 0 },
+        '3.00 - 3.49': { 'No Depression': 0, 'Depression': 0 },
+        '3.50 - 4.00': { 'No Depression': 0, 'Depression': 0 },
     };
+
+    healthData2.forEach(person => {
+        const gpaRange = person.dataCGPA;
+        const depressionStatus = person.dataDepression ? 'Depression' : 'No Depression';
+
+        if (rangeCounts[gpaRange]) {
+            rangeCounts[gpaRange][depressionStatus]++;
+        }
     });
 
-    console.log(healthData2);
+    // Convert data to the format suitable for D3 bar chart
+    const data = Object.entries(rangeCounts).map(([gpaRange, counts]) => ({
+        gpaRange,
+        counts,
+    }));
+
+    // Create SVG element
+    const svg = d3.select("body")
+    .append("svg")
+    .attr("width", svgWidth)
+    .attr("height", svgHeight)
+    .style("position", "absolute")
+    .style("top", "0")
+    .style("left", "0")
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
-    const svg = d3.select("svg")
 
-    const g1 = svg.append("g")
-                .attr("width", scatterWidth + scatterMargin.left + scatterMargin.right)
-                .attr("height", scatterHeight + scatterMargin.top + scatterMargin.bottom)
-                .attr("transform", `translate(${scatterMargin.left}, ${scatterMargin.top})`)
-
-    // X label
-    g1.append("text")
-    .attr("x", scatterWidth / 2)
-    .attr("y", scatterHeight + 50)
+    //X TITLE
+    svg.append("text")
+    .attr("x", graph_width / 2)  // Adjusted to consider the left margin
+    .attr("y", 0 + 20)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
-    .text("CGPA")
-    
+    .text("CGPA vs DEPRESSION");
+
+
+    //X LABEL
+    svg.append("text")
+    .attr("x", graph_width / 2)  // Adjusted to consider the left margin
+    .attr("y", graph_height + 50)
+    .attr("font-size", "20px")
+    .attr("text-anchor", "middle")
+    .text("CGPA RANGES");
 
     // Y label
-    g1.append("text")
-    .attr("x", -(scatterHeight / 2))
+    svg.append("text")
+    .attr("x", -(svgHeight / 2) +30)
     .attr("y", -40)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90)")
-    .text("DEPRESSION")
+    .text("# of people with depression")
+    // Define color scale
+    const colorScale = d3.scaleOrdinal()
+        .domain(['No Depression', 'Depression'])
+        .range(['green', 'red']);
 
-   // Create x and y scales
-    // Create x and y scales
-    const xScale = d3.scaleLinear()
-    .domain([d3.min(healthData2, d => d.dataCGPA), d3.max(healthData2, d => d.dataCGPA)])
-    .range([0, scatterWidth]);
-
-
-    const xAxisCall = d3.axisBottom(xScale)
-        .ticks(15)
-
-    g1.append("g")
-    .attr("transform", `translate(0, ${scatterHeight})`)
-    .call(xAxisCall)
-    .selectAll("text")
-        .attr("y", "10")
-        .attr("x", "-5")
-        .attr("text-anchor", "end")
-        .attr("transform", "rotate(-40)")
+    // Create X and Y scales
+    const xScale = d3.scaleBand()
+        .domain(data.map(d => d.gpaRange))
+        .range([0, graph_width])
+        .padding(0.1);
 
     const yScale = d3.scaleLinear()
-        .domain([0, 1]) // Assuming Depression is a binary variable (Yes/No)
-        .range([scatterHeight, 0]);
+        .domain([0, d3.max(data, d => Math.max(d.counts['No Depression'], d.counts['Depression']))])
+        .range([graph_height, 0]);
 
-    const yAxisCall = d3.axisLeft(yScale)
-        .ticks(1)
-    
-    g1.append("g").call(yAxisCall)
-
-    // Create x and y axes
+    // Create X and Y axes
     const xAxis = d3.axisBottom(xScale);
     const yAxis = d3.axisLeft(yScale);
 
-    // Append x and y axes to the SVG
+    // Append X and Y axes to the SVG
     svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("transform", "translate(0," + graph_height + ")")
         .call(xAxis);
 
     svg.append("g")
         .call(yAxis);
-        
-
-    const rects = g1.selectAll("circle").data(rawData)
-
-    rects.enter().append("circle")
-         .attr("cx", function(d){
-             return x1(d.dataCGPA);
-         })
-         .attr("cy", function(d){
-             return y1(d.dataDepression);
-         })
-         .attr("r", 3)
-         .attr("fill", "#69b3a2")
-
     
-}).catch(function(error)
-{
-    console.log(error);
-});
+     // X label
+
+    // Create bars
+    const bars = svg.selectAll(".bar")
+        .data(data)
+        .enter().append("g")
+        .attr("class", "bar")
+        .attr("transform", d => "translate(" + xScale(d.gpaRange) + "," + 0 + ")");
+
+    // Create rectangles within each bar group
+    bars.selectAll("rect")
+        .data(d => Object.entries(d.counts).map(([status, count]) => ({ status, count })))
+        .enter().append("rect")
+        .attr("x", (d, i) => xScale.bandwidth() / 2 * i)  // Adjust x position based on index
+        .attr("y", d => yScale(d.count))
+        .attr("width", xScale.bandwidth() / 2)  // Divide bandwidth by 2 for each rectangle
+        .attr("height", d => graph_height - yScale(d.count))
+        .attr("fill", d => colorScale(d.status));
+
+
+    // Create legend
+    const legend = svg.append("g")
+        .attr("transform", "translate(" + (graph_width + 10) + "," + 0 + ")");
+
+    // Append colored rectangles
+    legend.selectAll("rect")
+        .data(['No Depression', 'Depression'])
+        .enter().append("rect")
+        .attr("y", (d, i) => i * 20)
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("fill", colorScale);
+
+    // Append text to the legend
+    legend.selectAll("text")
+        .data(['No Depression', 'Depression'])
+        .enter().append("text")
+        .attr("x", 20)
+        .attr("y", (d, i) => i * 20 + 12)
+        .text(d => d);
 
 
 
-//BREAK POINT DIVIDING MY CODE AND THEIRS
 
 
 
 
 
-d3.csv("players.csv").then(rawData =>{
-    console.log("rawData", rawData);
+
+
+
+
+    //PLOT 2
+
+
+    const svgWidth2 = 800;
+    const svgHeight2 = 400;
+    const margin2 = { top: 50, right: 30, bottom: 30, left: 100 };
+ 
+    const radius = 120;
+   
     
-    rawData.forEach(function(d){
-        d.AB = Number(d.AB);
-        d.H = Number(d.H);
-        d.salary = Number(d.salary);
-        d.SO = Number(d.SO);
+
+
+    const yearCounts = {
+        'year 1': { 'No Depression': 0, 'Depression': 0, 'No Anxiety': 0, 'Anxiety': 0, 'Total': 0 },
+        'year 2': { 'No Depression': 0, 'Depression': 0, 'No Anxiety': 0, 'Anxiety': 0, 'Total': 0 },
+        'year 3': { 'No Depression': 0, 'Depression': 0, 'No Anxiety': 0, 'Anxiety': 0, 'Total': 0 },
+        'year 4': { 'No Depression': 0, 'Depression': 0, 'No Anxiety': 0, 'Anxiety': 0, 'Total': 0 },
+        'year 5': { 'No Depression': 0, 'Depression': 0, 'No Anxiety': 0, 'Anxiety': 0, 'Total': 0 },
+    };
+    
+    healthData2.forEach(person => {
+        const yearOfStudy = person.dataCurYearStudy.toLowerCase();
+        const depressionStatus = person.dataDepression ? 'Depression' : 'No Depression';
+        const anxietyStatus = person.dataAnxiety ? 'Anxiety' : 'No Anxiety';
+    
+        if (yearCounts[yearOfStudy]) {
+            yearCounts[yearOfStudy][depressionStatus]++;
+            yearCounts[yearOfStudy][anxietyStatus]++;
+            yearCounts[yearOfStudy]['Total']++;
+        }
     });
     
-//filtering data
-    rawData = rawData.filter(d=>d.AB>abFilter);
-//creaintg the new array of data
-    rawData = rawData.map(d=>{
-                          return {
-                              "H_AB":d.H/d.AB,
-                              "SO_AB":d.SO/d.AB,
-                              "teamID":d.teamID,
-                          };
+    // Convert data to the format suitable for D3 pie chart
+    const pieData = Object.entries(yearCounts).map(([year, counts]) => ({
+        year,
+        counts,
+    }));
+    console.log("pieData: ",pieData);
+    
+    // Create a pie chart
+    const pieSvg = d3.select("body")
+        .append("svg")
+        .attr("width", svgWidth2)
+        .attr("height", svgHeight2)
+        .style("position", "absolute")
+        .style("top", "-30")
+        .style("left", "800")  // Adjusted left position for better visibility
+        .append("g")
+        .attr("transform", "translate(" + svgWidth2 / 2 + "," + svgHeight2 / 2 + ")");
+
+    //X TITLE
+    pieSvg.append("text")
+    .attr("x", 0)  // Adjusted to consider the left margin
+    .attr("y", 160)
+    .attr("font-size", "20px")
+    .attr("text-anchor", "middle")
+    .text("College Acaemic Year Demographic");
+    pieSvg.append("text")
+    .attr("x", 0)  // Adjusted to consider the left margin
+    .attr("y", 180)
+    .attr("font-size", "20px")
+    .attr("text-anchor", "middle")
+    .text("of Depression and Anxiety");
+
+
+    const pieGenerator = d3.pie().value(d => d.counts.Total);
+
+
+    const arcs = pieGenerator(pieData);
+    const legend2 = d3.select("body")
+    .append("div")
+    .attr("class", "legend")
+    .style("position", "absolute")
+    .style("top", "50px")
+    .style("left", "1400px")
+    .html(`
+        <strong>YEAR 1</strong><br>
+        Total Students: ${pieData[0].counts.Total}<br>
+        Depression Count: ${pieData[0].counts.Depression}<br>
+        Anxiety Count: ${pieData[0].counts.Anxiety}
+    `);
+
+// Append paths for the pie chart
+pieSvg.selectAll("path")
+    .data(arcs)
+    .enter().append("path")
+    .attr("d", d3.arc().innerRadius(0).outerRadius(radius))
+    .attr("fill", (d, i) => d3.schemeCategory10[i])
+    .on("mouseover", (event, d) => {
+        const year = event.data.year;
+        const counts = event.data.counts;
+
+        // Update the legend with information on mouseover
+        legend2.html(`
+            <strong>${year.toUpperCase()}</strong><br>
+            Total Students: ${counts.Total}<br>
+            Depression Count: ${counts.Depression}<br>
+            Anxiety Count: ${counts.Anxiety}
+        `);
+    })
+    .on("mouseout", () => {
+       //do nothing on mouse out
+       
     });
-    console.log(rawData);
-    
-//plot 1
-    // const svg = d3.select("svg")
 
-    // const g1 = svg.append("g")
-    //             .attr("width", scatterWidth + scatterMargin.left + scatterMargin.right)
-    //             .attr("height", scatterHeight + scatterMargin.top + scatterMargin.bottom)
-    //             .attr("transform", `translate(${scatterMargin.left}, ${scatterMargin.top})`)
-
-    // // X label
-    // g1.append("text")
-    // .attr("x", scatterWidth / 2)
-    // .attr("y", scatterHeight + 50)
-    // .attr("font-size", "20px")
-    // .attr("text-anchor", "middle")
-    // .text("H/AB")
-    
-
-    // // Y label
-    // g1.append("text")
-    // .attr("x", -(scatterHeight / 2))
-    // .attr("y", -40)
-    // .attr("font-size", "20px")
-    // .attr("text-anchor", "middle")
-    // .attr("transform", "rotate(-90)")
-    // .text("SO/AB")
-
-    // // X ticks
-    // const x1 = d3.scaleLinear()
-    // .domain([0, d3.max(rawData, d => d.H_AB)])
-    // .range([0, scatterWidth])
-
-    // const xAxisCall = d3.axisBottom(x1)
-    //                     .ticks(7)
-    // g1.append("g")
-    // .attr("transform", `translate(0, ${scatterHeight})`)
-    // .call(xAxisCall)
-    // .selectAll("text")
-    //     .attr("y", "10")
-    //     .attr("x", "-5")
-    //     .attr("text-anchor", "end")
-    //     .attr("transform", "rotate(-40)")
-
-    // // Y ticks
-    // const y1 = d3.scaleLinear()
-    // .domain([0, d3.max(rawData, d => d.SO_AB)])
-    // .range([scatterHeight, 0])
-
-    // const yAxisCall = d3.axisLeft(y1)
-    //                     .ticks(13)
-    // g1.append("g").call(yAxisCall)
-
-    // const rects = g1.selectAll("circle").data(rawData)
-
-    // rects.enter().append("circle")
-    //      .attr("cx", function(d){
-    //          return x1(d.H_AB);
-    //      })
-    //      .attr("cy", function(d){
-    //          return y1(d.SO_AB);
-    //      })
-    //      .attr("r", 3)
-    //      .attr("fill", "#69b3a2")
-
-//space
-    // const g2 = svg.append("g")
-    //             .attr("width", distrWidth + distrMargin.left + distrMargin.right)
-    //             .attr("height", distrHeight + distrMargin.top + distrMargin.bottom)
-    //             .attr("transform", `translate(${distrLeft}, ${distrTop})`)
-
-//plot 2
-    
-    q = rawData.reduce((s, { teamID }) => (s[teamID] = (s[teamID] || 0) + 1, s), {});
-    r = Object.keys(q).map((key) => ({ teamID: key, count: q[key] }));
-    console.log(r);
-
-           
-    const g3 = svg.append("g")
-                .attr("width", teamWidth + teamMargin.left + teamMargin.right)
-                .attr("height", teamHeight + teamMargin.top + teamMargin.bottom)
-                .attr("transform", `translate(${teamMargin.left}, ${teamTop})`)
-
-    // X label
-    g3.append("text")
-    .attr("x", teamWidth / 2)
-    .attr("y", teamHeight + 50)
-    .attr("font-size", "20px")
-    .attr("text-anchor", "middle")
-    .text("Team")
-    
-
-    // Y label
-    g3.append("text")
-    .attr("x", -(teamHeight / 2))
-    .attr("y", -40)
-    .attr("font-size", "20px")
-    .attr("text-anchor", "middle")
-    .attr("transform", "rotate(-90)")
-    .text("Number of players")
-
-    // X ticks
-    const x2 = d3.scaleBand()
-    .domain(r.map(d => d.teamID))
-    .range([0, teamWidth])
-    .paddingInner(0.3)
-    .paddingOuter(0.2)
-
-    const xAxisCall2 = d3.axisBottom(x2)
-    g3.append("g")
-    .attr("transform", `translate(0, ${teamHeight})`)
-    .call(xAxisCall2)
-    .selectAll("text")
-        .attr("y", "10")
-        .attr("x", "-5")
-        .attr("text-anchor", "end")
-        .attr("transform", "rotate(-40)")
-
-    // Y ticks
-    const y2 = d3.scaleLinear()
-    .domain([0, d3.max(r, d => d.count)])
-    .range([teamHeight, 0])
-
-    const yAxisCall2 = d3.axisLeft(y2)
-                        .ticks(6)
-    g3.append("g").call(yAxisCall2)
-
-    const rects2 = g3.selectAll("rect").data(r)
-
-    rects2.enter().append("rect")
-    .attr("y", d => y2(d.count))
-    .attr("x", (d) => x2(d.teamID))
-    .attr("width", x2.bandwidth)
-    .attr("height", d => teamHeight - y2(d.count))
-    .attr("fill", "grey")
-
-
-
-}).catch(function(error){
+}).catch(function (error) {
     console.log(error);
 });
-
