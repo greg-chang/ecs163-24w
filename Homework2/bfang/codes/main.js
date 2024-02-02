@@ -264,6 +264,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     // Data Processing
     allTypeOne = [];
     [allTypeOne, rawData] = processingData(rawData);
+    rawData = rawData.slice(-50);
 
     const svg = d3.select("svg")
 
@@ -271,11 +272,6 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .attr("width", heatWidth + heatMargin.left + heatMargin.right)
         .attr("height", heatHeight + heatMargin.top + heatMargin.bottom)
         .attr("transform", `translate(${width - (pieMargin.left + pieRadius + pieLeft)}, ${pieMargin.top + pieRadius})`);
-    
-    // Build color scale
-    const myColor = d3.scaleSequential()
-        .interpolator(d3.interpolateInferno)
-        .domain([1,100]);
 
 }).catch(function(error){
     console.log(error);
