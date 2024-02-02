@@ -73,9 +73,28 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
 
     // For plot 1, we only care about these attributes
     let dimensions = ["Total", "HP", "Attack", "Defense", "Sp_Atk", "Sp_Def", "Speed"];
-
+    let colors = [
+        '#78C850', // Grass
+        '#F08030', // Fire
+        '#6890F0', // Water
+        '#A8B820', // Bug
+        '#A8A878', // Normal
+        '#A040A0', // Poison
+        '#F8D030', // Electric
+        '#E0C068', // Ground
+        '#EE99AC', // Fairy
+        '#C03028', // Fighting
+        '#F85888', // Psychic
+        '#B8A038', // Rock
+        '#705898', // Ghost
+        '#98D8D8', // Ice
+        '#7038F8', // Dragon
+        '#705848', // Dark
+        '#B8B8D0', // Steel
+        '#A890F0', // Flying
+      ];
     const color = d3.scaleOrdinal()
-        .range(d3.schemeSet2);
+        .range(colors);
 
     // store y objects
     const y = {};
@@ -178,6 +197,27 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         }
     })
 
+    let colors = [
+        '#78C850', // Grass
+        '#F08030', // Fire
+        '#6890F0', // Water
+        '#A8B820', // Bug
+        '#A8A878', // Normal
+        '#A040A0', // Poison
+        '#F8D030', // Electric
+        '#E0C068', // Ground
+        '#EE99AC', // Fairy
+        '#C03028', // Fighting
+        '#F85888', // Psychic
+        '#B8A038', // Rock
+        '#705898', // Ghost
+        '#98D8D8', // Ice
+        '#7038F8', // Dragon
+        '#705848', // Dark
+        '#B8B8D0', // Steel
+        '#A890F0', // Flying
+      ];
+
     // Select svg
     const svg = d3.select("svg");
 
@@ -191,7 +231,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
 
     // set the color scale
     const color = d3.scaleOrdinal()
-    .range(d3.schemeSet2);
+    .range(colors);
 
     // Compute the position of each group on the pie:
     const pie = d3.pie()
@@ -265,9 +305,14 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     // Data Processing
     allTypeOne = [];
     [allTypeOne, rawData] = processingData(rawData);
-    rawData = rawData.slice(0, 50);
+    processedData = [];
+    rawData.forEach(d => {
+        if (d.Type_1 == "Water") {
+            processedData.push(d);
+        }
+    });
 
-    const svg = d3.select("svg")
+    const svg = d3.select("svg");
 
     const g3 = svg.append("g")
         .attr("width", hisWidth + hisMargin.left + hisMargin.right)
