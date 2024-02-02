@@ -10,17 +10,17 @@ let parallelMargin = {top: 10, right: 30, bottom: 30, left: 60},
     parallelWidth = width - parallelMargin.left - parallelMargin.right,
     parallelHeight = height - 450 - parallelMargin.top - parallelMargin.bottom;
 
-// Dimensions for the heat map
-let heatlLeft = 0, heatTop = 400;
-let heatMargin = {top: 10, right: 30, bottom: 30, left: 60},
-    heatWidth = 400 - heatMargin.left - heatMargin.right,
-    heatHeight = 350 - heatMargin.top - heatMargin.bottom;
-
 // Dimensions for the pie chart
 let pieLeft = 100, pieTop = 0;
 let pieMargin = {top: 60, right: 30, bottom: 30, left: 80},
     pieWidth = 400 - pieMargin.left - pieMargin.right,
     pieHeight = 350 - pieMargin.top - pieMargin.bottom;
+
+// Dimensions for the histogram
+let hisLeft = 1000, hisTop = 0;
+let hisMargin = {top: 10, right: 30, bottom: 30, left: 60},
+    hisWidth = 400 - hisMargin.left - hisMargin.right,
+    hisHeight = 350 - hisMargin.top - hisMargin.bottom;
 
 function processingData(rawData) {
     // Data Processing
@@ -260,18 +260,19 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     console.log(error);
 });
 
+// Plot 3: Histogram of the last 50 Pokemons
 d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     // Data Processing
     allTypeOne = [];
     [allTypeOne, rawData] = processingData(rawData);
-    rawData = rawData.slice(-50);
+    rawData = rawData.slice(0, 50);
 
     const svg = d3.select("svg")
 
     const g3 = svg.append("g")
-        .attr("width", heatWidth + heatMargin.left + heatMargin.right)
-        .attr("height", heatHeight + heatMargin.top + heatMargin.bottom)
-        .attr("transform", `translate(${width - (pieMargin.left + pieRadius + pieLeft)}, ${pieMargin.top + pieRadius})`);
+        .attr("width", hisWidth + hisMargin.left + hisMargin.right)
+        .attr("height", hisHeight + hisMargin.top + hisMargin.bottom)
+        .attr("transform", `translate(${hisMargin.left + hisLeft}, ${hisMargin.top + hisTop})`);
 
 }).catch(function(error){
     console.log(error);
