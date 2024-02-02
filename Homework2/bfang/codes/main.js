@@ -1,6 +1,7 @@
 // Overall dimension of the canvas
 const width = window.innerWidth;
 const height = window.innerHeight;
+let pieRadius = 0;
 
 // Dimensions for each individual plot
 // Dimensions for the parallel coordinates plot
@@ -8,6 +9,12 @@ let parallelLeft = 0, parallelTop = 400;
 let parallelMargin = {top: 10, right: 30, bottom: 30, left: 60},
     parallelWidth = width - parallelMargin.left - parallelMargin.right,
     parallelHeight = height - 450 - parallelMargin.top - parallelMargin.bottom;
+
+// Dimensions for the heat map
+let heatlLeft = 0, heatTop = 400;
+let heatMargin = {top: 10, right: 30, bottom: 30, left: 60},
+    heatWidth = 400 - heatMargin.left - heatMargin.right,
+    heatHeight = 350 - heatMargin.top - heatMargin.bottom;
 
 // Dimensions for the pie chart
 let pieLeft = 100, pieTop = 0;
@@ -172,9 +179,10 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     })
 
     // Select svg
-    const svg = d3.select("svg")
+    const svg = d3.select("svg");
 
     const radius = Math.min(pieWidth + pieMargin.left + pieMargin.right, pieHeight + pieMargin.top + pieMargin.bottom) / 2 - pieMargin.right;
+    pieRadius = radius;
 
     const g2 = svg.append("g")
                 .attr("width", pieWidth + pieMargin.left + pieMargin.right)
@@ -247,6 +255,27 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .style("font-size", "16px")
         .style("font-weight", "bold")
         .text("Pokemon's Composition in the Whole Dataset");
+
+}).catch(function(error){
+    console.log(error);
+});
+
+d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
+    // Data Processing
+    allTypeOne = [];
+    [allTypeOne, rawData] = processingData(rawData);
+
+    const svg = d3.select("svg")
+
+    const g3 = svg.append("g")
+        .attr("width", heatWidth + heatMargin.left + heatMargin.right)
+        .attr("height", heatHeight + heatMargin.top + heatMargin.bottom)
+        .attr("transform", `translate(${width - (pieMargin.left + pieRadius + pieLeft)}, ${pieMargin.top + pieRadius})`);
+    
+    // Build color scale
+    const myColor = d3.scaleSequential()
+        .interpolator(d3.interpolateInferno)
+        .domain([1,100]);
 
 }).catch(function(error){
     console.log(error);
