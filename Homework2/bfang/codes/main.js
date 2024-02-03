@@ -16,11 +16,11 @@ let pieMargin = {top: 60, right: 30, bottom: 30, left: 80},
     pieWidth = 400 - pieMargin.left - pieMargin.right,
     pieHeight = 350 - pieMargin.top - pieMargin.bottom;
 
-// Dimensions for the histogram
-let hisLeft = 1000, hisTop = 0;
-let hisMargin = {top: 10, right: 30, bottom: 30, left: 60},
-    hisWidth = 400 - hisMargin.left - hisMargin.right,
-    hisHeight = 350 - hisMargin.top - hisMargin.bottom;
+// Dimensions for the Scatter Plot
+let scatterLeft = 1000, scatterTop = 50;
+let scatterMargin = {top: 10, right: 30, bottom: 30, left: 60},
+    scatterWidth = 400 - scatterMargin.left - scatterMargin.right,
+    scatterHeight = 350 - scatterMargin.top - scatterMargin.bottom;
 
 function processingData(rawData) {
     // Data Processing
@@ -312,12 +312,48 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         }
     });
 
+    console.log(processedData)
+
     const svg = d3.select("svg");
 
     const g3 = svg.append("g")
-        .attr("width", hisWidth + hisMargin.left + hisMargin.right)
-        .attr("height", hisHeight + hisMargin.top + hisMargin.bottom)
-        .attr("transform", `translate(${hisMargin.left + hisLeft}, ${hisMargin.top + hisTop})`);
+        .attr("width", scatterWidth + scatterMargin.left + scatterMargin.right)
+        .attr("height", scatterHeight + scatterMargin.top + scatterMargin.bottom)
+        .attr("transform", `translate(${scatterMargin.left + scatterLeft}, ${scatterMargin.top + scatterTop})`);
+
+    // Add X axis
+    const x = d3.scaleLinear()
+    .domain([0, d3.max(processedData, function(d) { return d.Attack; })])
+    .range([ 0, scatterWidth ]);
+    g3.append("g")
+    .attr("transform", `translate(0, ${scatterHeight})`)
+    .call(d3.axisBottom(x));
+
+    // Add Y axis
+    const y = d3.scaleLinear()
+    .domain([0, d3.max(processedData, function(d) { return d.Defense; })])
+    .range([ scatterHeight, 0]);
+    g3.append("g")
+    .call(d3.axisLeft(y));
+
+    // Add dots
+    g3.append('g')
+    .selectAll("dot")
+    .data(processedData)
+    .join("circle")
+        .attr("cx", function (d) { return x(d.Attack); } )
+        .attr("cy", function (d) { return y(d.Defense); } )
+        .attr("r", 1.5)
+        .style("fill", "#69b3a2")
+
+    // Add a title to g3
+    g3.append("text")
+        .attr("x", scatterWidth / 2)
+        .attr("y", -20)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .text("Water Pokemon's Attack vs Defense");
 
 }).catch(function(error){
     console.log(error);
