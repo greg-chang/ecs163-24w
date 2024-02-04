@@ -304,18 +304,34 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
 
     // Add X axis
     const x = d3.scaleLinear()
-    .domain([0, d3.max(processedData, function(d) { return d.Attack; })])
-    .range([ 0, scatterWidth ]);
+        .domain([0, d3.max(processedData, function(d) { return d.Attack; })])
+        .range([ 0, scatterWidth ])
+
     g3.append("g")
-    .attr("transform", `translate(0, ${scatterHeight})`)
-    .call(d3.axisBottom(x));
+        .attr("transform", `translate(0, ${scatterHeight})`)
+        .call(d3.axisBottom(x))
+        // Add axis title
+        .append("text")
+          .style("text-anchor", "middle")
+          .attr("transform", `translate(${scatterWidth + 10}, ${0})`)
+          .attr("y", -9)
+          .text("Attack")
+          .style("fill", "black");
 
     // Add Y axis
     const y = d3.scaleLinear()
-    .domain([0, d3.max(processedData, function(d) { return d.Defense; })])
-    .range([ scatterHeight, 0]);
+        .domain([0, d3.max(processedData, function(d) { return d.Defense; })])
+        .range([ scatterHeight, 0]);
+
     g3.append("g")
-    .call(d3.axisLeft(y));
+        .call(d3.axisLeft(y))
+        // Add axis title
+        .append("text")
+          .style("text-anchor", "middle")
+          .attr("transform", `translate(${0}, ${0})`)
+          .attr("y", -9)
+          .text("Defense")
+          .style("fill", "black");
 
     // Add dots
     g3.append('g')
