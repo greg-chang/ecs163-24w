@@ -598,6 +598,20 @@ students.forEach(student => {
         Column 4: Students with Depression
     `);
 
+    TITLE3 = d3.select("body")
+    .append("div")
+    .attr("class", "legend")
+    .style("position", "absolute")
+    .style("top", "875px")
+    .style("left", "100px")
+    .style("font-size","30px")
+    .html(`
+        <strong>Number of Students -> Academic Year -> CGPA Ranges -> Depression </strong><br>
+        
+    `);
+
+
+
 
 }).catch(function (error) {
     console.log(error);
