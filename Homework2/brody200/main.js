@@ -271,6 +271,334 @@ pieSvg.selectAll("path")
        
     });
 
+
+
+// plot 3
+
+//part 1 data
+const students = healthData;
+  
+  // Initialize a counter object for each year
+  const yearCount = {
+    "year 1": 0,
+    "year 2": 0,
+    "year 3": 0,
+    "year 4": 0,
+  };
+  
+  // Iterate over the dataset to count students in each year
+  students.forEach(student => {
+    const year = student["Your current year of Study"].toLowerCase(); // Normalize to lowercase for consistency
+  
+    if (yearCount.hasOwnProperty(year)) {
+      yearCount[year]++;
+    }
+  });
+  
+  // Initialize the Sankey data array
+  const sankeyData = [];
+  
+  // Add the Total Number of Students in Survey for each year to the Sankey data array
+  Object.keys(yearCount).forEach(year => {
+    sankeyData.push({
+      source: "Total Number of Students in Survey",
+      target: year,
+      value: yearCount[year],
+    });
+  });
+  
+//part 2
+const yearCGPACount = {
+    'year 1': {'0 - 1.99': 0, '2.00 - 2.49': 0, '2.50 - 2.99': 0, '3.00 - 3.49': 0, '3.50 - 4.00': 0},
+    'year 2': {'0 - 1.99': 0, '2.00 - 2.49': 0, '2.50 - 2.99': 0, '3.00 - 3.49': 0, '3.50 - 4.00': 0},
+    'year 3': {'0 - 1.99': 0, '2.00 - 2.49': 0, '2.50 - 2.99': 0, '3.00 - 3.49': 0, '3.50 - 4.00': 0},
+    'year 4': {'0 - 1.99': 0, '2.00 - 2.49': 0, '2.50 - 2.99': 0, '3.00 - 3.49': 0, '3.50 - 4.00': 0},
+  };
+  
+  // Iterate over the dataset to count students in each year and CGPA range
+
+  students.forEach(student => {
+    const year = student["Your current year of Study"].toLowerCase(); // Normalize to lowercase for consistency
+    const cgpa = student["What is your CGPA?"];
+    // console.log(year, "CGPA: ",cgpa);
+    
+    if (yearCGPACount.hasOwnProperty(year)) {
+      // Determine the CGPA range
+
+
+
+      let cgpaRange = "";
+      if (cgpa.includes("0 - 1.99")) {
+        cgpaRange = "0 - 1.99";
+      } else if (cgpa.includes("2.00 - 2.49")) {
+        cgpaRange = "2.00 - 2.49";
+      } else if (cgpa.includes("2.50 - 2.99") ){
+        cgpaRange = "2.50 - 2.99";
+      } else if (cgpa.includes("3.00 - 3.49")) {
+        cgpaRange = "3.00 - 3.49";
+      } else if (cgpa.includes("3.50 - 4.00")) {
+        cgpaRange = "3.50 - 4.00";
+      }
+  
+      // Increment the count for the corresponding year and CGPA range
+      if (yearCGPACount[year].hasOwnProperty(cgpaRange)) {
+        yearCGPACount[year][cgpaRange]++;
+        // console.log("YENTERED YEAR: ",year, "CGPA: ",cgpa)
+      }else{
+        console.log("NENTERED YEAR: ",year, "CGPA: ",cgpa)
+      }
+    }
+  });
+  console.log("YearCGPACount",yearCGPACount);
+  // Convert the count data to the specified format
+Object.keys(yearCGPACount).forEach(year => {
+    Object.keys(yearCGPACount[year]).forEach(cgpaRange => {
+      sankeyData.push({
+        source: year,
+        target: cgpaRange,
+        value: yearCGPACount[year][cgpaRange],
+      });
+    });
+  });
+//part 3
+const cgpaDepressedCount = {
+    "0 - 1.99": 0,
+    "2.00 - 2.49": 0,
+    "2.50 - 2.99": 0,
+    "3.00 - 3.49": 0,
+    "3.50 - 4.00": 0,
+  };
+students.forEach(student => {
+    const cgpa = student["What is your CGPA?"];
+    const hasDepression = student["Do you have Depression?"].toLowerCase().includes("yes");
+
+    // Determine the CGPA range
+    let cgpaRange = "";
+    if (cgpa.includes("0 - 1.99")) {
+        cgpaRange = "0 - 1.99";
+    } else if (cgpa.includes("2.00 - 2.49")) {
+        cgpaRange = "2.00 - 2.49";
+    } else if (cgpa.includes("2.50 - 2.99")) {
+        cgpaRange = "2.50 - 2.99";
+    } else if (cgpa.includes("3.00 - 3.49")) {
+        cgpaRange = "3.00 - 3.49";
+    } else if (cgpa.includes("3.50 - 4.00")) {
+        cgpaRange = "3.50 - 4.00";
+    }
+
+    // Increment the count for the corresponding CGPA range and depression status
+    if (cgpaDepressedCount.hasOwnProperty(cgpaRange) && hasDepression === true) {
+        // console.log("ENTER::");
+        cgpaDepressedCount[cgpaRange]++;
+    }
+    });
+
+    console.log("cgpaDEPRESSCOUNT: ",cgpaDepressedCount);
+
+    // Convert the count data to the specified format
+    Object.keys(cgpaDepressedCount).forEach(cgpaRange => {
+    sankeyData.push({
+        source: cgpaRange,
+        target: "Depressed",
+        value: cgpaDepressedCount[cgpaRange],
+    });
+    });
+
+    console.log(sankeyData); // DATA HAS NOW BEEN FINISHED
+
+
+    //CREATE SANKEY DATA SETUP
+    sankeyDataStruc = {nodes: [], links: []};
+    sankeyData.forEach((d) => {
+        const nodesList = sankeyDataStruc.nodes.map((n) => n.name);
+        if(!nodesList.includes(d.source) ){
+            sankeyDataStruc.nodes.push({ name: d.source});
+        }
+        if(!nodesList.includes(d.target)){
+            sankeyDataStruc.nodes.push({ name: d.target});
+        }
+        sankeyDataStruc.links.push({
+            source: d.source,
+            target: d.target,
+            value: d.value
+        });
+    });
+    sankeyDataStruc.links.forEach((l, lNdx) => {
+        sankeyDataStruc.links[lNdx].source = sankeyDataStruc.nodes.indexOf(
+            sankeyDataStruc.nodes.find((n) => n.name === l.source)
+            );
+        sankeyDataStruc.links[lNdx].target = sankeyDataStruc.nodes.indexOf(
+            sankeyDataStruc.nodes.find((n) => n.name === l.target)
+            );
+    })
+    const dimensions = {
+        width: 1400, // Adjust based on available space
+        height: 500, // Adjust based on the number of nodes and links
+        margins: 10
+      };
+
+    // const sankey = d3.sankey()  
+    //     .nodeWidth(15)
+    //     .nodePadding(10)
+    //     .size([dimensions.width, dimensions.height]);
+
+    // const { nodes, links } = sankey(sankeyDataStruc);
+
+    
+
+    const svg3 = d3.select("body")
+        .append("svg")
+        .attr("width", dimensions.width)
+        .attr("height", dimensions.height)
+        .style("position", "absolute")
+        .style("top", "400")
+        .style("left", "50")
+        .append("g")
+        .attr("overflow", "visible");
+      
+    
+      const sankeyViz = d3
+        .sankey()
+        .nodes(sankeyDataStruc.nodes)
+        .links(sankeyDataStruc.links)
+        .nodeAlign(d3.sankeyLeft)
+        .nodeWidth(175)
+        
+        .extent([
+        [0, 60],
+        [
+            dimensions.width - dimensions.margins * 2,
+            dimensions.height - 20  * 2
+        ]
+        ]);
+    sankeyViz();
+    console.log("sankeyviz:: ",sankeyDataStruc);
+    
+    
+    
+    
+    
+    const colorScale2 = d3
+        .scaleOrdinal()
+        .domain(sankeyDataStruc.nodes.map((n) => n.name))
+        .range([
+          "#00008B",
+          "#008B8B",
+          "#B8860B",
+          "#8B008B",
+          "#483D8B",
+          "#B22222",
+          "#8B0000",
+          "#DAA520",
+          "#006600",
+          "#00cc00",
+          "992"
+        ])
+    console.log("SANKEY:",sankeyDataStruc);
+
+
+  svg3
+    .append("g")
+    .style("position", "absolute")
+    .style("top", "400")
+    .style("left", "800")
+    .attr("transform", `translate(${dimensions.margins},${dimensions.margins})`)
+    .attr("height", dimensions.height - dimensions.margins * 2)
+    .attr("width", dimensions.width - dimensions.margins * 2)
+    .attr("overflow", "visible");
+
+  const adjustor = (i) => {
+    if (i === 8) {
+      return 30;
+    } else if (i === 6) {
+      return -30;
+    } else return 0;
+  };
+
+    svg3
+    .append("text")
+    .text("Sankey Chart of University Depression")
+    .attr("dominant-baseline", "middle")
+    .attr("font-size", "31.25")
+    .attr("font-weight", "600")
+    .attr("y", "30");
+
+
+  svg3 // nodes
+    .append("g")
+    .selectAll("rect")
+    .data(sankeyDataStruc.nodes)
+    .join("rect")
+    .attr("x", (d) => d.x0)
+    .attr("y", (d) => d.y0)
+    .attr("fill", (d) => colorScale2(d.name))
+    .attr("height", (d) => d.y1 - (d.y0))
+    .attr("width", (d) => d.x1 - d.x0);
+
+  svg3 // linkspaths things
+    .append("g")
+    .attr("fill", "none")
+    .attr("stroke", "#000")
+    .attr("stroke-opacity", 0.1)
+    .selectAll("path")
+    .data(sankeyDataStruc.links)
+    .join("path")
+    .attr("d", d3.sankeyLinkHorizontal())
+    .attr("stroke-width", function (d) {
+      return d.width;
+    });
+
+  svg3 //label names
+    .append("g")
+    .selectAll("text")
+    .data(sankeyDataStruc.nodes)
+    .join("text")
+    .text((d) => d.name)
+    .attr("class", (d) => d.depth)
+    .attr("x", (d) => d3.mean([d.x0, d.x1]))
+    .attr("y", (d) => d3.mean([d.y0, d.y1]))
+    .attr("dy", (d) => `${-5 + adjustor(d.index)}px`)
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "middle")
+    .attr("fill", (d) => (d.y1 - d.y0 < 20 ? "black" : "white"))
+    .attr("font-family", "helvetica")
+    .attr("font-weight", "400")
+    .attr("font-size", "16")
+    .style("text-shadow", ".5px .5px 2px #222");
+
+  svg3 // label values
+    .append("g")
+    .selectAll("text")
+    .data(sankeyDataStruc.nodes)
+    .join("text")
+    .text((d) => `${d3.format("~s")(d.value)}`)
+    .attr("x", (d) => d3.mean([d.x0, d.x1]))
+    .attr("y", (d) => d3.mean([d.y0, d.y1]))
+    .attr("dy", (d) => `${15 + adjustor(d.index)}px`)
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "middle")
+    .attr("fill", (d) => (d.y1 - d.y0 < 20 ? "black" : "white"))
+    .attr("font-family", "helvetica")
+    .attr("font-weight", "200")
+    .attr("font-size", "24")
+    .style("text-shadow", ".5px .5px 2px #222");
+
+
+    const legend3 = d3.select("body")
+    .append("div")
+    .attr("class", "legend")
+    .style("position", "absolute")
+    .style("top", "750px")
+    .style("left", "1250px")
+    .html(`
+        <strong>Sankey Legened</strong><br>
+        Column 1: Total Number of Students<br>
+        Column 2: Academic Years<br>
+        Column 3: CGPA Ranges and Number of students in the range<br>
+        Column 4: Students with Depression
+    `);
+
+
 }).catch(function (error) {
     console.log(error);
 });
