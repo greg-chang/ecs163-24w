@@ -22,6 +22,27 @@ let scatterMargin = {top: 10, right: 30, bottom: 30, left: 60},
     scatterWidth = 400 - scatterMargin.left - scatterMargin.right,
     scatterHeight = 350 - scatterMargin.top - scatterMargin.bottom;
 
+let colors = [
+    '#78C850', // Grass
+    '#F08030', // Fire
+    '#6890F0', // Water
+    '#A8B820', // Bug
+    '#008080', // Normal
+    '#A040A0', // Poison
+    '#F8D030', // Electric
+    '#E0C068', // Ground
+    '#EE99AC', // Fairy
+    '#C03028', // Fighting
+    '#F85888', // Psychic
+    '#B8A038', // Rock
+    '#705898', // Ghost
+    '#98D8D8', // Ice
+    '#7038F8', // Dragon
+    '#705848', // Dark
+    '#B8B8D0', // Steel
+    '#A890F0', // Flying
+];
+
 function processingData(rawData) {
     // Data Processing
     allTypeOne = []
@@ -73,26 +94,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
 
     // For plot 1, we only care about these attributes
     let dimensions = ["Total", "HP", "Attack", "Defense", "Sp_Atk", "Sp_Def", "Speed"];
-    let colors = [
-        '#78C850', // Grass
-        '#F08030', // Fire
-        '#6890F0', // Water
-        '#A8B820', // Bug
-        '#A8A878', // Normal
-        '#A040A0', // Poison
-        '#F8D030', // Electric
-        '#E0C068', // Ground
-        '#EE99AC', // Fairy
-        '#C03028', // Fighting
-        '#F85888', // Psychic
-        '#B8A038', // Rock
-        '#705898', // Ghost
-        '#98D8D8', // Ice
-        '#7038F8', // Dragon
-        '#705848', // Dark
-        '#B8B8D0', // Steel
-        '#A890F0', // Flying
-      ];
+
     const color = d3.scaleOrdinal()
         .range(colors);
 
@@ -196,27 +198,6 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
             processedData[d.Type_1] = 1;
         }
     })
-
-    let colors = [
-        '#78C850', // Grass
-        '#F08030', // Fire
-        '#6890F0', // Water
-        '#A8B820', // Bug
-        '#A8A878', // Normal
-        '#A040A0', // Poison
-        '#F8D030', // Electric
-        '#E0C068', // Ground
-        '#EE99AC', // Fairy
-        '#C03028', // Fighting
-        '#F85888', // Psychic
-        '#B8A038', // Rock
-        '#705898', // Ghost
-        '#98D8D8', // Ice
-        '#7038F8', // Dragon
-        '#705848', // Dark
-        '#B8B8D0', // Steel
-        '#A890F0', // Flying
-      ];
 
     // Select svg
     const svg = d3.select("svg");
