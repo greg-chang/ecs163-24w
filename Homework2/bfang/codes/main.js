@@ -17,7 +17,7 @@ let pieMargin = {top: 60, right: 30, bottom: 30, left: 80},
     pieHeight = 350 - pieMargin.top - pieMargin.bottom;
 
 // Dimensions for the Scatter Plot
-let scatterLeft = 1200, scatterTop = 50;
+let scatterLeft = 1300, scatterTop = 50;
 let scatterMargin = {top: 10, right: 30, bottom: 30, left: 60},
     scatterWidth = 400 - scatterMargin.left - scatterMargin.right,
     scatterHeight = 350 - scatterMargin.top - scatterMargin.bottom;
