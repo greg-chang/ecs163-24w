@@ -11,13 +11,13 @@ let parallelMargin = {top: 10, right: 30, bottom: 30, left: 60},
     parallelHeight = height - 450 - parallelMargin.top - parallelMargin.bottom;
 
 // Dimensions for the pie chart
-let pieLeft = 100, pieTop = 0;
+let pieLeft = 200, pieTop = 0;
 let pieMargin = {top: 60, right: 30, bottom: 30, left: 80},
     pieWidth = 400 - pieMargin.left - pieMargin.right,
     pieHeight = 350 - pieMargin.top - pieMargin.bottom;
 
 // Dimensions for the Scatter Plot
-let scatterLeft = 1000, scatterTop = 50;
+let scatterLeft = 1200, scatterTop = 50;
 let scatterMargin = {top: 10, right: 30, bottom: 30, left: 60},
     scatterWidth = 400 - scatterMargin.left - scatterMargin.right,
     scatterHeight = 350 - scatterMargin.top - scatterMargin.bottom;
@@ -123,7 +123,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .attr("d",  path)
         .style("fill", "none" )
         .style("stroke", function(d){ return( color(d.Type_1))} )
-        .style("opacity", 0.5)
+        .style("opacity", 1)
 
     // Set up axis
     g1.selectAll("myAxis")
@@ -258,7 +258,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     // Add a legend to the side of the parallel coordinates plot
     const legend = svg.append("g")
         .attr("class", "legend")
-        .attr("transform", `translate(${pieMargin.left}, ${pieMargin.top})`);
+        .attr("transform", `translate(${pieMargin.left + 100}, ${pieMargin.top})`);
 
     const legendRectSize = 12;
     const legendSpacing = 4;
@@ -289,7 +289,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
 
     // Add title
     svg.append("text")
-        .attr("x", (legendLeftPosition + pieRightPosition) / 2)
+        .attr("x", ((legendLeftPosition + pieRightPosition) / 2) + 50)
         .attr("y", pieMargin.top * 2 / 3)
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
