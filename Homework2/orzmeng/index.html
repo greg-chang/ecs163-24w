@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html style="width: 100%; height: 100%;">
+
+<head>
+    <meta charset="utf-8">
+    <title>D3 Visualization Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <style>
+        #top-charts {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        #scatterplot,
+        #barchart {
+            width: 30%;
+            height: 600px;
+        }
+        
+        #sankeychart {
+            width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body style="margin: 0; display: flex; flex-direction: column; align-items: center;">
+    <div id="top-charts" style="width: 100%; display: flex; justify-content: space-between;">
+        <div id="scatterplot" style="flex: 1;"></div>
+        <div id="barchart" style="flex: 1;"></div>
+    </div>
+    <div id="sankeychart" style="width: 100%;"></div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>
