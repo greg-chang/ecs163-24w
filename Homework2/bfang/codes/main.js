@@ -117,6 +117,31 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         return d3.line()(dimensions.map(function(p) { return [x(p), y[p](d[p])]; }));
     }
 
+    // Highlight the type that is hovered
+    const highlight = function(event, d){
+        
+        let selected_type = d.Type_1;
+
+        // first every group turns grey
+        d3.selectAll(".line")
+            .transition().duration(200)
+            .style("stroke", "lightgrey")
+            .style("opacity", "0.2")
+        // Second the hovered type takes its color
+        d3.select(this)
+            .transition().duration(200)
+            .style("stroke", color(selected_type))
+            .style("opacity", "1")
+    }
+
+    // Unhighlight
+    const doNotHighlight = function(event, d){
+        d3.selectAll(".line")
+            .transition().duration(200).delay(1000)
+            .style("stroke", function(d){ return( color(d.Type_1))} )
+            .style("opacity", "1")
+    }
+
     // Draw paths
     g1.selectAll("myPath")
         .data(rawData)
@@ -126,6 +151,8 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .style("fill", "none" )
         .style("stroke", function(d){ return( color(d.Type_1))} )
         .style("opacity", 1)
+        .on("mouseover", highlight)
+        .on("mouseleave", doNotHighlight);
 
     // Set up axis
     g1.selectAll("myAxis")
@@ -281,7 +308,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     console.log(error);
 });
 
-// Plot 3: Histogram of the last 50 Pokemons
+// Plot 3: Scatter plot for Water Type Pokemon
 d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     // Data Processing
     allTypeOne = [];
@@ -292,8 +319,6 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
             processedData.push(d);
         }
     });
-
-    console.log(processedData)
 
     const svg = d3.select("svg");
 
