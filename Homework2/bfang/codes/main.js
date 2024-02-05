@@ -142,6 +142,8 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
             .style("opacity", "1")
     }
 
+    // Problem detected: The draw line function is not properly coded. For .on(), the data d doesn't pass in as an object. It passed in as an integer, and that is why d.Type_1 is undefine and it always give the same color. Need to do fix that problem in Draw path part.
+
     // Draw paths
     g1.selectAll("myPath")
         .data(rawData)
