@@ -16,27 +16,63 @@ let teamLeft = 0, teamTop = 400;
 let teamMargin = {top: 10, right: 30, bottom: 30, left: 60},
     teamWidth = width - teamMargin.left - teamMargin.right,
     teamHeight = height-450 - teamMargin.top - teamMargin.bottom;
-// d3.select("body").append("h1").text("Hello World!");
+
+// helper method to get all unique values of keys:
+// https://stackoverflow.com/questions/15125920/how-to-get-distinct-values-from-an-array-of-objects-in-javascript
+// const unique = [...new Set(data.map(item => item.group))];    
+
+
+  // var unique = [];
+  // var distinct = [];
+  // for( let i = 0; i < data.length; i++ ) {
+  //   if( !unique[data[i].age]){
+  //     distinct.push(data[i].age);
+  //     unique[data[i].age] = 1;
+  //   }
+  // }
+  // return distinct;
+
 // get the data
 d3.csv("ds_salaries.csv").then(data => {
   // console.log("rawData", data);
-  console.log(Object.keys(data[0]));
+  // console.log(Object.keys(data[0]));
     
   // shove all the data vis here
   // do parallel coordinates diagram for overview
   // make the overview one quarter of screen space
+  // Enumerate all keys
+  // for (i = 0; i < data.length; i++) {
+  //   for (key = 0; key < data[0].length; key++) {
+  //     Object.keys(data[i])
+  //   }
+  // }
+  
   // https://d3-graph-gallery.com/graph/parallel_basic.html
-  // Extract the list of dimensions we want to keep in the plot. Here I keep all
+  // Extract the list of dimensions we want to keep in the plot. Keep all.
   dimensions = Object.keys(data[0]);
-
-  // For each dimension, build a linear scale. Store all in a y object
+  // for (i in dimensions) {
+  //   dim = dimensions[i]
+  //   const uniqueYears = [...new Set(data.map(item => item[dim]))];
+  //   console.log(uniqueYears)
+  // }
+  
+  // For each dimension, build a linear scale if numerical, else ordinal scale. Store all in a y object
   var y = {}
   for (i in dimensions) {
-    dim = dimensions[i]
-    y[dim] = d3.scaleLinear()
-      .domain( d3.extent(data, function(d) { return +d[dim]; }) )
-      .range([height, 0])
+    dim = dimensions[i].toString()
+    if (dim != 'salary' || dim != 'salary_in_usd') {
+      const uniqueDimVals = [...new Set(data.map(item => item[dim]))];
+      y[dim] = d3.scaleOrdinal()
+        .domain( uniqueDimVals )
+        .range([height, 0])
+    }    
+    else {
+      y[dim] = d3.scaleLinear()
+        .domain( d3.extent(data, function(d) { return +d[dim]; }) )
+        .range([height, 0])
+    }
   }
+  console.log(y)
 
   // Build the X scale -> find the best position for each Y axis
   x = d3.scalePoint()
@@ -51,11 +87,11 @@ d3.csv("ds_salaries.csv").then(data => {
   const svg = d3.select("svg")
 
   const g1 = svg.append("g")
-              .attr("width", parallelWidth + parallelMargin.left + parallelMargin.right)
-              .attr("height", parallelHeight + parallelMargin.top + parallelMargin.bottom)
+              .attr("width", (parallelWidth + parallelMargin.left + parallelMargin.right/2))
+              .attr("height", (parallelHeight + parallelMargin.top + parallelMargin.bottom)/2)
               .attr("transform", `translate(${parallelMargin.left}, ${parallelMargin.top})`)
 
-              g1
+              svg
               .selectAll("myPath")
               .data(data)
               .enter().append("path")
@@ -63,9 +99,9 @@ d3.csv("ds_salaries.csv").then(data => {
               .style("fill", "none")
               .style("stroke", "#69b3a2")
               .style("opacity", 0.5)
-          
+            
             // Draw the axis:
-            g1.selectAll("myAxis")
+            svg.selectAll("myAxis")
               // For each dimension of the dataset, add a 'g' element:
               .data(dimensions).enter()
               .append("g")
@@ -76,9 +112,10 @@ d3.csv("ds_salaries.csv").then(data => {
               // Add axis title
               .append("text")
                 .style("text-anchor", "middle")
-                .attr("y", -9)
+                .attr("y", -9 /*, <height specified>*/)
                 .text(function(d) { return d; })
-                .style("fill", "black")
+              .style("fill", "black")
+  
   
 }).catch(function(error){
   console.log(error);
