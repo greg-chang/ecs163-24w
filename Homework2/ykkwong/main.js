@@ -49,32 +49,27 @@ d3.csv("ds_salaries.csv").then(data => {
   
   // https://d3-graph-gallery.com/graph/parallel_basic.html
   // Extract the list of dimensions we want to keep in the plot. Keep all.
-  dimensions = Object.keys(data[0]);
-  // for (i in dimensions) {
-  //   dim = dimensions[i]
-  //   const uniqueYears = [...new Set(data.map(item => item[dim]))];
-  //   console.log(uniqueYears)
-  // }
+  dimensions = Object.keys(data[0]).filter(function(d) { return (d != "job_title" && d != "employee_residence" && d != "company_location") });
   
   // For each dimension, build a linear scale if numerical, else ordinal scale. Store all in a y object
   var y = {}
   for (i in dimensions) {
-    dim = dimensions[i].toString()
-    if (dim != 'salary' || dim != 'salary_in_usd') {
+    dim = dimensions[i]
+    if (dim != 'salary' && dim != 'salary_in_usd') {
       const uniqueDimVals = [...new Set(data.map(item => item[dim]))];
-      y[dim] = d3.scaleOrdinal()
+      console.log(uniqueDimVals)
+      y[dim] = d3.scalePoint()
         .domain( uniqueDimVals )
         .range([height, 0])
     }    
     else {
       y[dim] = d3.scaleLinear()
-        .domain( d3.extent(data, function(d) { return +d[dim]; }) )
+        .domain( d3.extent(data, function(d) { return d[dim]; }) )
         .range([height, 0])
     }
   }
-  console.log(y)
 
-  // Build the X scale -> find the best position for each Y axis
+  // Build the X scale -> it find the best position for each Y axis
   x = d3.scalePoint()
     .range([0, width])
     .padding(1)
@@ -86,35 +81,31 @@ d3.csv("ds_salaries.csv").then(data => {
   }
   const svg = d3.select("svg")
 
-  const g1 = svg.append("g")
-              .attr("width", (parallelWidth + parallelMargin.left + parallelMargin.right/2))
-              .attr("height", (parallelHeight + parallelMargin.top + parallelMargin.bottom)/2)
-              .attr("transform", `translate(${parallelMargin.left}, ${parallelMargin.top})`)
+  // Draw the lines
+  svg
+    .selectAll("myPath")
+    .data(data)
+    .join("path")
+    .attr("d",  path)
+    .style("fill", "none")
+    .style("stroke", "#69b3a2")
+    .style("opacity", 0.5)
 
-              svg
-              .selectAll("myPath")
-              .data(data)
-              .enter().append("path")
-              .attr("d",  path)
-              .style("fill", "none")
-              .style("stroke", "#69b3a2")
-              .style("opacity", 0.5)
-            
-            // Draw the axis:
-            svg.selectAll("myAxis")
-              // For each dimension of the dataset, add a 'g' element:
-              .data(dimensions).enter()
-              .append("g")
-              // Translate this element to its right position on the x axis
-              .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
-              // And build the axis with the call function
-              .each(function(d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
-              // Add axis title
-              .append("text")
-                .style("text-anchor", "middle")
-                .attr("y", -9 /*, <height specified>*/)
-                .text(function(d) { return d; })
-              .style("fill", "black")
+  // Draw the axis:
+  svg.selectAll("myAxis")
+    // For each dimension of the dataset I add a 'g' element:
+    .data(dimensions).enter()
+    .append("g")
+    // I translate this element to its right position on the x axis
+    .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+    // And I build the axis with the call function
+    .each(function(d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
+    // Add axis title
+    .append("text")
+      .style("text-anchor", "middle")
+      .attr("y", -9)
+      .text(function(d) { return d; })
+      .style("fill", "black")
   
   
 }).catch(function(error){
