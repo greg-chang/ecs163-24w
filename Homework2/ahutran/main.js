@@ -1,208 +1,84 @@
-let abFilter = 25
+//Site width/height
 const width = window.innerWidth;
 const height = window.innerHeight;
 
-let scatterLeft = 0, scatterTop = 0;
-let scatterMargin = {top: 10, right: 30, bottom: 30, left: 60},
-    scatterWidth = 400 - scatterMargin.left - scatterMargin.right,
-    scatterHeight = 350 - scatterMargin.top - scatterMargin.bottom;
+//Plot 1 variables
+var width1 = 450;
+var height1 = 450;
+var margin1 = 40;
 
-let distrLeft = 400, distrTop = 0;
-let distrMargin = {top: 10, right: 30, bottom: 30, left: 60},
-    distrWidth = 400 - distrMargin.left - distrMargin.right,
-    distrHeight = 350 - distrMargin.top - distrMargin.bottom;
+var radius1 = Math.min(width, height) / 2 - margin1;
 
-let teamLeft = 0, teamTop = 400;
-let teamMargin = {top: 10, right: 30, bottom: 30, left: 60},
-    teamWidth = width - teamMargin.left - teamMargin.right,
-    teamHeight = height-450 - teamMargin.top - teamMargin.bottom;
-
-
-d3.csv("players.csv").then(rawData =>{
-    console.log("rawData", rawData);
-    
+//Scatter plot dimensions/params
+d3.csv("ds_salaries.csv").then(rawData =>{
     rawData.forEach(function(d){
-        d.AB = Number(d.AB);
-        d.H = Number(d.H);
+        d.work_year = Number(d.work_year);
+        d.experience_level = String(d.experience_level);
+        d.employment_type = String(d.employment_type);
+        d.job_title = String(d.job_title);
         d.salary = Number(d.salary);
-        d.SO = Number(d.SO);
+        d.salary_currency = String(d.salary_currency);
+        d.salary_in_usd = Number(d.salary_in_usd);
+        d.employee_residence = String(d.employee_residence);
+        d.remote_ratio = Number(d.remote_ratio);
+        d.company_location = String(d.company_location);
+        d.company_size = String(d.company_size);
     });
-    
-
-    rawData = rawData.filter(d=>d.AB>abFilter);
-    rawData = rawData.map(d=>{
-                          return {
-                              "H_AB":d.H/d.AB,
-                              "SO_AB":d.SO/d.AB,
-                              "teamID":d.teamID,
-                          };
-    });
+    //rawData is an array that contains each row as an object now
     console.log(rawData);
+    //First plot will be an interactive pie chart? This will serve as overview
+    //Original idea of data is salary of different data science fields
+    //Marks: slices of pie chart
+    //Channels: color (unimportant, used for differentiation),
+    //          angle/area (important, used for comparison),
+    //Slice of pie will represent percentage of people in that field
+    //Hovering over will reveal average salary of that field
+
+    //Data process
+    //Create a dictionary for our data where the key is each job_title and the value is an array of salaries
+    let jobSalaries = {};
+    rawData.forEach(function(d){
+        if (!jobSalaries[d.job_title]){
+            jobSalaries[d.job_title] = [];
+        }
+        jobSalaries[d.job_title].push(d.salary_in_usd);
+    });
+    console.log(jobSalaries);
+    //Since the job titles can differ slightly, we will simply look jobs with more than 50 people.
+    let jobSalariesFiltered = {};
+    for (const [key, value] of Object.entries(jobSalaries)){
+        if (value.length > 50){
+            jobSalariesFiltered[key] = value;
+        }
+    }
+    console.log(jobSalariesFiltered);
+    //Now we will take jobSalariesFiltered and calculate the average salary for each job rounding to the nearest integer.
+    //The new array will be an array of objects with the job title and the average salary as well as the number of people in that job
+    let jobSalariesAvg = [];
+    for (const [key, value] of Object.entries(jobSalariesFiltered)){
+        let sum = value.reduce((a, b) => a + b, 0);
+        let avg = Math.round(sum / value.length);
+        jobSalariesAvg.push({"job_title": key, "avg_salary": avg, "num_people": value.length});
+    }
+    console.log(jobSalariesAvg);
     
-//plot 1
-    const svg = d3.select("svg")
+    var svg = d3.select("plt1")
+        .append("svg")
+        .attr("width", width1)
+        .attr("height", height1)
+        .append("g")
+        .attr("transform", "translate(" + width1 / 2 + "," + height1 / 2 + ")");
 
-    const g1 = svg.append("g")
-                .attr("width", scatterWidth + scatterMargin.left + scatterMargin.right)
-                .attr("height", scatterHeight + scatterMargin.top + scatterMargin.bottom)
-                .attr("transform", `translate(${scatterMargin.left}, ${scatterMargin.top})`)
-
-    // X label
-    g1.append("text")
-    .attr("x", scatterWidth / 2)
-    .attr("y", scatterHeight + 50)
-    .attr("font-size", "20px")
-    .attr("text-anchor", "middle")
-    .text("H/AB")
+    var color = d3.scaleOrdinal()
+        .domain(jobSalariesAvg)
+        .range(d3.schemeSet2);
     
+    var pie = d3.pie()
+        .value(function(d) {return d.avg;});
+    var data_ready = pie(d3.entries(jobSalariesAvg))
 
-    // Y label
-    g1.append("text")
-    .attr("x", -(scatterHeight / 2))
-    .attr("y", -40)
-    .attr("font-size", "20px")
-    .attr("text-anchor", "middle")
-    .attr("transform", "rotate(-90)")
-    .text("SO/AB")
-
-    // X ticks
-    const x1 = d3.scaleLinear()
-    .domain([0, d3.max(rawData, d => d.H_AB)])
-    .range([0, scatterWidth])
-
-    const xAxisCall = d3.axisBottom(x1)
-                        .ticks(7)
-    g1.append("g")
-    .attr("transform", `translate(0, ${scatterHeight})`)
-    .call(xAxisCall)
-    .selectAll("text")
-        .attr("y", "10")
-        .attr("x", "-5")
-        .attr("text-anchor", "end")
-        .attr("transform", "rotate(-40)")
-
-    // Y ticks
-    const y1 = d3.scaleLinear()
-    .domain([0, d3.max(rawData, d => d.SO_AB)])
-    .range([scatterHeight, 0])
-
-    const yAxisCall = d3.axisLeft(y1)
-                        .ticks(13)
-    g1.append("g").call(yAxisCall)
-
-    const rects = g1.selectAll("circle").data(rawData)
-
-    rects.enter().append("circle")
-         .attr("cx", function(d){
-             return x1(d.H_AB);
-         })
-         .attr("cy", function(d){
-             return y1(d.SO_AB);
-         })
-         .attr("r", 3)
-         .attr("fill", "#69b3a2")
-
-//space
-    const g2 = svg.append("g")
-                .attr("width", distrWidth + distrMargin.left + distrMargin.right)
-                .attr("height", distrHeight + distrMargin.top + distrMargin.bottom)
-                .attr("transform", `translate(${distrLeft}, ${distrTop})`)
-
-//plot 2
+    var arcGenerator = d3.arc()
+    .innerRadius(0)
+    .outerRadius(radius1);
     
-    q = rawData.reduce((s, { teamID }) => (s[teamID] = (s[teamID] || 0) + 1, s), {});
-    r = Object.keys(q).map((key) => ({ teamID: key, count: q[key] }));
-    console.log(r);
-
-           
-    const g3 = svg.append("g")
-                .attr("width", teamWidth + teamMargin.left + teamMargin.right)
-                .attr("height", teamHeight + teamMargin.top + teamMargin.bottom)
-                .attr("transform", `translate(${teamMargin.left}, ${teamTop})`)
-
-    // X label
-    g3.append("text")
-    .attr("x", teamWidth / 2)
-    .attr("y", teamHeight + 50)
-    .attr("font-size", "20px")
-    .attr("text-anchor", "middle")
-    .text("Team")
-    
-
-    // Y label
-    g3.append("text")
-    .attr("x", -(teamHeight / 2))
-    .attr("y", -40)
-    .attr("font-size", "20px")
-    .attr("text-anchor", "middle")
-    .attr("transform", "rotate(-90)")
-    .text("Number of players")
-
-    // X ticks
-    const x2 = d3.scaleBand()
-    .domain(r.map(d => d.teamID))
-    .range([0, teamWidth])
-    .paddingInner(0.3)
-    .paddingOuter(0.2)
-
-    const xAxisCall2 = d3.axisBottom(x2)
-    g3.append("g")
-    .attr("transform", `translate(0, ${teamHeight})`)
-    .call(xAxisCall2)
-    .selectAll("text")
-        .attr("y", "10")
-        .attr("x", "-5")
-        .attr("text-anchor", "end")
-        .attr("transform", "rotate(-40)")
-
-    // Y ticks
-    const y2 = d3.scaleLinear()
-    .domain([0, d3.max(r, d => d.count)])
-    .range([teamHeight, 0])
-
-    const yAxisCall2 = d3.axisLeft(y2)
-                        .ticks(6)
-    g3.append("g").call(yAxisCall2)
-
-    const rects2 = g3.selectAll("rect").data(r)
-
-    rects2.enter().append("rect")
-    .attr("y", d => y2(d.count))
-    .attr("x", (d) => x2(d.teamID))
-    .attr("width", x2.bandwidth)
-    .attr("height", d => teamHeight - y2(d.count))
-    .attr("fill", "grey")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}).catch(function(error){
-    console.log(error);
 });
-
