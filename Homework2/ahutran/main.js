@@ -1,6 +1,3 @@
-//Resources Visited:
-//https://www.visualcinnamon.com/2015/09/placing-text-on-arcs/
-
 //Site width/height
 const screenwidth = window.innerWidth;
 const screenheight = window.innerHeight;
@@ -23,12 +20,6 @@ d3.csv("ds_salaries.csv").then(rawData =>{
     //rawData is an array that contains each row as an object now
     console.log(rawData);
     //First plot will be an interactive pie chart? This will serve as overview
-    //Original idea of data is salary of different data science fields
-    //Marks: slices of pie chart
-    //Channels: color (unimportant, used for differentiation),
-    //          angle/area (important, used for comparison),
-    //Slice of pie will represent percentage of people in that field
-    //Hovering over will reveal average salary of that field
 
     //Data process for Plot 1
     //Create a dictionary for our data where the key is each job_title and the value is an array of salaries
@@ -63,8 +54,6 @@ d3.csv("ds_salaries.csv").then(rawData =>{
     console.log("Data for Plot 2");
     //Data process for Plot 2
     //Create an array where each object includes the job_title, unique experience_level, unique_employment types, and the number of people with those attributes
-    //If there is a new experience_level, make another object with the same job_title but different experience_level.
-    //If there is a new employment_type, make another object with the same job_title and experience_level but different employment_type.
     let jobExpEmp = [];
     rawData.forEach(function(d){
         let jobTitle = d.job_title;
@@ -182,7 +171,7 @@ d3.csv("ds_salaries.csv").then(rawData =>{
     console.log("Data for Plot 3");
     console.log(companySizeSalaries);
     //------------------------------------------------------------------------------------------------------------------------------------------------------------//
-    //Plot 1 - Pie Chart
+    //Plot 1 - Pie Chart - //https://www.visualcinnamon.com/2015/09/placing-text-on-arcs/
     var margin1 = {left: 20, top: 20, right: 20, bottom: 20},
     width1 = Math.min(screenwidth, 500) - margin1.left - margin1.right,
     height1 = Math.min(screenwidth, 500) - margin1.top - margin1.bottom;
