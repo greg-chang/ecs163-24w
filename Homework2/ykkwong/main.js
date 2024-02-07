@@ -7,15 +7,15 @@ let parallelMargin = {top: 40, right: 0, bottom: 10, left: 0},
     parallelWidth = width,
     parallelHeight = 350 - parallelMargin.top;
 
-let distrLeft = 400, distrTop = 0;
-let distrMargin = {top: 10, right: 30, bottom: 30, left: 30},
-    distrWidth = 400 - distrMargin.left - distrMargin.right,
-    distrHeight = 350 - distrMargin.top - distrMargin.bottom;
+// let distrLeft = 400, distrTop = 0;
+// let distrMargin = {top: parallelHeight, right: 30, bottom: 30, left: 30},
+//     distrWidth = width/2,
+//     distrHeight = 350 - parallelHeight;
 
-// let teamLeft = 0, teamTop = 400;
-// let teamMargin = {top: 10, right: 30, bottom: 30, left: 60},
-//     teamWidth = width - teamMargin.left - teamMargin.right,
-//     teamHeight = height-450 - teamMargin.top - teamMargin.bottom;
+let teamLeft = 130, teamTop = 450 + parallelHeight;
+let teamMargin = {top: parallelHeight, right: 30, bottom: 30, left: 30},
+    teamWidth = width/2,
+    teamHeight = 350 - height - parallelHeight;
 
 // get the data
 d3.csv("ds_salaries.csv").then(data => {
@@ -29,7 +29,8 @@ d3.csv("ds_salaries.csv").then(data => {
                 .attr("transform", `translate(${parallelMargin.left}, ${parallelMargin.top})`)
   // https://d3-graph-gallery.com/graph/parallel_basic.html
   // Extract the list of dimensions we want to keep in the plot. Keep all except the categoricals with too many unique values (>50).
-  dimensions = Object.keys(data[0]).filter(function (d) {
+  allDimensions = Object.keys(data[0])
+  dimensions = allDimensions.filter(function (d) {
     return (d != "job_title" &&
       d != "employee_residence" && d != "company_location" && d != "salary")
   });
@@ -39,8 +40,8 @@ d3.csv("ds_salaries.csv").then(data => {
   for (i in dimensions) {
     dim = dimensions[i]
     if (dim != 'salary' && dim != 'salary_in_usd') {
-      const uniqueDimVals = [...new Set(data.map(item => item[dim]))];
-      console.log(uniqueDimVals)
+      const uniqueDimVals = [...new Set(data.map(item => item[dim]))].sort();
+      // console.log(uniqueDimVals)
       y1[dim] = d3.scalePoint()
         .domain( uniqueDimVals )
         .range([parallelHeight, 0])
@@ -61,8 +62,7 @@ d3.csv("ds_salaries.csv").then(data => {
   // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
   function path(d) {
       return d3.line()(dimensions.map(function(p) { return [x(p), y1[p](d[p])]; }));
-  }
-  
+  }  
 
   // Draw the lines
   g1
@@ -97,6 +97,87 @@ d3.csv("ds_salaries.csv").then(data => {
     .style("font-size", "14px") 
     .style("text-decoration", "underline")  
     .text("Annual Data Scientist Salaries");
+  
+  // ----------------------------------------------------------------------------------
+  // bar graph: average salary per experience level            
+  const g2 = svg.append("g")
+              .attr("width", teamWidth + teamMargin.left + teamMargin.right)
+              .attr("height", teamHeight + teamMargin.top + teamMargin.bottom)
+              .attr("transform", `translate(${teamMargin.left}, ${teamTop})`)
+  
+  function groupBy(objectArray, property) {
+    return objectArray.reduce(function (acc, obj) {
+      let key = obj[property]
+      if (!acc[key]) {
+        acc[key] = []
+      }
+      acc[key].push(obj)
+      return acc
+    }, {})
+  }
+  
+  
+  let experience_level_groups = groupBy(data, "experience_level");
+  let formattedData = [];
+  Object.keys(experience_level_groups).forEach(d => {
+    let initialValue = 0;
+    let cumulativeSalary = experience_level_groups[d].reduce((acc, curvalue) => acc + Number(curvalue.salary_in_usd), initialValue);
+    let average = cumulativeSalary / experience_level_groups[d].length ;
+    
+    let processedObj = {
+      exp_lvl: d,
+      average: average
+    }
+    formattedData.push(processedObj);
+  });
+  
+  let y_axis_start = (teamHeight+teamMargin.top+230);
+
+  // X axis
+  var x = d3.scaleLinear()
+    .domain([0, 200000])
+    .range([ 0, width/3]);
+  g2.append("g")
+    .attr("transform", "translate(" + teamLeft + ',' + (teamHeight+teamMargin.top+230) + ")")
+    .call(d3.axisBottom(x))
+    .selectAll("text")
+      .attr("transform", "translate(-10,0)rotate(-45)")
+      .style("text-anchor", "end");
+      
+  // Y axis
+  var y = d3.scaleBand()
+    .range([ 0, teamHeight/3 ])
+    .domain([...new Set(data.map(item => item['experience_level']))])
+    .padding(0.05);
+  g2.append("g")
+    .call(d3.axisLeft(y))
+    .attr("transform", "translate(" + teamLeft + ',' + y_axis_start + ")")
+
+  
+
+  g2
+    .selectAll("rect") 
+    .data(formattedData)
+    .join("rect")
+    .attr("x", x(0) )
+    .attr("y", d => y(d.exp_lvl))
+    .attr("width", d => x(d.average))
+    .attr("height", y.bandwidth())
+    .attr("fill", "#69b3a2")
+    .attr("transform", "translate(" + teamLeft + ',' + y_axis_start + ")")
+
+  g2.append("text")
+    .attr("transform", "translate(" + (teamLeft + teamMargin.left + 150) + ',' + (teamHeight + parallelHeight) + ")")
+    .attr("text-anchor", "middle")  
+    .style("font-size", "14px") 
+    .style("text-decoration", "underline")  
+    .text("Average Salary in USD by Experience Level");
+  
+  //-----------------------------------------------------------------------------------
+  
+
+
+  
   
 }).catch(function(error){
   console.log(error);
