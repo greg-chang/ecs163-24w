@@ -1,0 +1,7 @@
+.bottom-container {
+    display: flex;
+    justify-content: space-around;
+}
+#parallel-coordinates, #bar-chart {
+    flex: 1; 
+}
