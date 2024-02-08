@@ -8,14 +8,14 @@ let scatterMargin = {top: 10, right: 30, bottom: 30, left: 60},
     scatterHeight = 350 - scatterMargin.top - scatterMargin.bottom;
 
 let distrLeft = 400, distrTop = 0;
-let distrMargin = {top: 10, right: 30, bottom: 30, left: 60},
+let distrMargin = {top: 20, right: 30, bottom: 10, left: 60},
     distrWidth = 400 - distrMargin.left - distrMargin.right,
     distrHeight = 350 - distrMargin.top - distrMargin.bottom;
 
-let teamLeft = 0, teamTop = 400;
-let teamMargin = {top: 10, right: 30, bottom: 30, left: 60},
-    teamWidth = width - teamMargin.left - teamMargin.right,
-    teamHeight = height-450 - teamMargin.top - teamMargin.bottom;
+let jobsLeft = 0, jobsTop = 400;
+let jobsMargin = {top: 10, right: 30, bottom: 40, left: 60},
+    jobsWidth = width - jobsMargin.left - jobsMargin.right,
+    jobsHeight = height-450 - jobsMargin.top - jobsMargin.bottom;
 
 
 d3.csv("ds_salaries.csv").then(rawData =>{
@@ -114,26 +114,28 @@ d3.csv("ds_salaries.csv").then(rawData =>{
     
     q = rawData.reduce((s, { job_title }) => (s[job_title] = (s[job_title] || 0) + 1, s), {});
     r = Object.keys(q).map((key) => ({ job_title: key, count: q[key] }));
+    r = r.filter(d=> d.count>35);
     console.log(r);
 
            
     const g3 = svg.append("g")
-                .attr("width", teamWidth + teamMargin.left + teamMargin.right)
-                .attr("height", teamHeight + teamMargin.top + teamMargin.bottom)
-                .attr("transform", `translate(${teamMargin.left}, ${teamTop})`)
+                .attr("width", jobsWidth + jobsMargin.left + jobsMargin.right)
+                .attr("height", jobsHeight + jobsMargin.top + jobsMargin.bottom)
+                .attr("transform", `translate(${jobsMargin.left}, ${jobsTop})`)
 
     // X label
+    /*
     g3.append("text")
-    .attr("x", teamWidth / 2)
-    .attr("y", teamHeight + 50)
+    .attr("x", jobsWidth / 2)
+    .attr("y", jobsHeight + 50)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
     .text("Job Title")
-    
+    */
 
     // Y label
     g3.append("text")
-    .attr("x", -(teamHeight / 2))
+    .attr("x", -(jobsHeight / 2))
     .attr("y", -40)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
@@ -143,13 +145,13 @@ d3.csv("ds_salaries.csv").then(rawData =>{
     // X ticks
     const x2 = d3.scaleBand()
     .domain(r.map(d => d.job_title))
-    .range([0, teamWidth])
+    .range([0, jobsWidth])
     .paddingInner(0.3)
     .paddingOuter(0.2)
 
     const xAxisCall2 = d3.axisBottom(x2)
     g3.append("g")
-    .attr("transform", `translate(0, ${teamHeight})`)
+    .attr("transform", `translate(0, ${jobsHeight})`)
     .call(xAxisCall2)
     .selectAll("text")
         .attr("y", "10")
@@ -160,7 +162,7 @@ d3.csv("ds_salaries.csv").then(rawData =>{
     // Y ticks
     const y2 = d3.scaleLinear()
     .domain([0, d3.max(r, d => d.count)])
-    .range([teamHeight, 0])
+    .range([jobsHeight, 0])
 
     const yAxisCall2 = d3.axisLeft(y2)
                         .ticks(6)
@@ -172,7 +174,7 @@ d3.csv("ds_salaries.csv").then(rawData =>{
     .attr("y", d => y2(d.count))
     .attr("x", (d) => x2(d.job_title))
     .attr("width", x2.bandwidth)
-    .attr("height", d => teamHeight - y2(d.count))
+    .attr("height", d => jobsHeight - y2(d.count))
     .attr("fill", "grey")
 
 
