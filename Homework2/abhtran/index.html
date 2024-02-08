@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <h1>Amanda Tran Homework 2</h1>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+        }
+        .chart-container {
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .chart-title {
+            text-align: center;
+            color: #333;
+            margin: 0 0 20px 0;
+        }
+        .label {
+            text-align: center;
+            color: #333;
+            margin: 0 0 20px 0;
+            font-size: 10px;
+        }
+        .interact {
+            text-align: center;
+            color: #333;
+            margin: 0 0 20px 0;
+            font-size: 8px;
+        }
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 8px;
+            font-size: 12px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container" id="parallel-coordinates">
+        <h2 class="chart-title">Parallel Coordinates Chart</h2>
+        <h3 class="label">Types of Product vs Price vs Rank</h3>
+        <h4 class="interact">hover over path to see path</h4>
+    </div>
+    <div class="chart-container" id="pieChart">
+        <h2 class="chart-title">Pie Chart of Product Distribution</h2>
+        <h3 class="label">Understanding breakup of Types of Product</h3>
+        <h4 class="interact">hover over slice to see value</h4>
+    </div>
+    <div class="chart-container" id="scatter-plot">
+        <h2 class="chart-title">Scatter Plot of Price vs Rank for each Brand</h2>
+        <h3 class="label">Brand dot plot Price vs Rank</h3>
+        <h4 class="interact">hover over dot to see brand</h4>
+    </div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
