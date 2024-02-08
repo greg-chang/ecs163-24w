@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Student Mental Health Dashboard</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			margin: 0;
+			padding: 20px;
+			background-color: #f4f4f4;
+        }
+
+        #bar-chart, #mental-health-pie-chart, #stream-chart {
+            margin: 20px;
+			border: 1px solid #ccc;
+			background-color: #fff;
+			box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        #bar-chart svg, #mental-health-pie-chart svg, #stream-chart svg {
+            overflow: visible;
+        }
+
+        svg {
+            display: block;
+            margin: auto;
+        }
+
+        .text {
+            text-anchor: middle;
+            font-size: 14px;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+			shape-rendering: crispEdges;
+        }
+
+        .axis text {
+			font-size: 12px;
+			color: #666;
+		}
+		.node rect {
+            fill-opacity: .9;
+            shape-rendering: crispEdges;
+        }
+        .node text {
+            fill: #000;
+            font: 10px sans-serif;
+        }
+        .link {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: .2;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="bar-chart"></div>
+    <div id="mental-health-pie-chart"></div>
+	<svg id="stream-chart" width="960" height="600"></svg>
+    <script src="main.js"></script>
+</body>
+</html>
