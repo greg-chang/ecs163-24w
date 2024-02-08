@@ -1,15 +1,19 @@
 const width = window.innerWidth;
 const height = window.innerHeight;
 
-let scatterLeft = 0, scatterTop = 0;
 let scatterMargin = {top: 10, right: 10, bottom: 10, left: 65},
     scatterWidth = ((2 * width)/5) - scatterMargin.left - scatterMargin.right,
     scatterHeight = 250 - scatterMargin.top - scatterMargin.bottom;
 
-let jobsLeft = 0, jobsTop = 350;
-let jobsMargin = {top: 10, right: 30, bottom: 10, left: 65},
-    jobsWidth = width - jobsMargin.left - jobsMargin.right,
-    jobsHeight = height - 435 - jobsMargin.top - jobsMargin.bottom;
+let parallelLeft = 1000;
+let parallelMargin = {top: 25, right: 10, bottom: 0, left: 0},
+    parallelWidth = 1050 - parallelMargin.left - parallelMargin.right,
+    parallelHeight = 600 - parallelMargin.top - parallelMargin.bottom;
+
+let barTop = 350;
+let barMargin = {top: 10, right: 30, bottom: 10, left: 65},
+    barWidth = width - barMargin.left - barMargin.right,
+    barHeight = height - 435 - barMargin.top - barMargin.bottom;
 
 
 d3.csv("ds_salaries.csv").then(rawData =>{
@@ -21,7 +25,6 @@ d3.csv("ds_salaries.csv").then(rawData =>{
     });
     
 
-    //rawData = rawData.filter(d=>d.AB>abFilter);
     rawData = rawData.map(d=>{
                           return {
                               "salary_in_usd":d.salary_in_usd,
@@ -44,7 +47,7 @@ d3.csv("ds_salaries.csv").then(rawData =>{
                 .attr("width", scatterWidth + scatterMargin.left + scatterMargin.right)
                 .attr("height", scatterHeight + scatterMargin.top + scatterMargin.bottom)
                 .attr("transform", `translate(${scatterMargin.left}, ${scatterMargin.top})`)
-                .attr("style", "outline: thin solid red;")   // Test Border
+                //.attr("style", "outline: thin solid red;")   // Test Border
 
     // X label
     g1.append("text")
@@ -103,22 +106,80 @@ d3.csv("ds_salaries.csv").then(rawData =>{
 
 // Plot 2
 
+// append the svg object to the body of the page
+const g2 = svg.append("g")
+                .attr("width", parallelWidth + parallelMargin.left + parallelMargin.right)
+                .attr("height", parallelHeight + parallelMargin.top + parallelMargin.bottom)
+                .attr("transform",`translate(${parallelLeft},${parallelMargin.top})`)
+                //.attr("style", "outline: thin solid red;")  // Test Border
 
+// Parse the Data
+d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/iris.csv").then( function(data) {
+
+  // Extract the list of dimensions we want to keep in the plot. Here I keep all except the column called Species
+  dimensions = Object.keys(data[0]).filter(function(d) { return d != "Species" })
+
+  // For each dimension, I build a linear scale. I store all in a y object
+  const y = {}
+  for (i in dimensions) {
+    name = dimensions[i]
+    y[name] = d3.scaleLinear()
+      .domain( d3.extent(data, function(d) { return +d[name]; }) )
+      .range([parallelHeight, 0])
+  }
+
+  // Build the X scale -> it find the best position for each Y axis
+  x = d3.scalePoint()
+    .range([0, parallelWidth])
+    .padding(1)
+    .domain(dimensions);
+
+  // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
+  function path(d) {
+      return d3.line()(dimensions.map(function(p) { return [x(p), y[p](d[p])]; }));
+  }
+
+  // Draw the lines
+  g2.selectAll("myPath")
+        .data(data)
+        .join("path")
+        .attr("d",  path)
+        .style("fill", "none")
+        .style("stroke", "#69b3a2")
+        .style("opacity", 0.5)
+
+  // Draw the axis:
+  g2.selectAll("myAxis")
+        // For each dimension of the dataset I add a 'g' element:
+        .data(dimensions).enter()
+        .append("g")
+        // I translate this element to its right position on the x axis
+        .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+        // And I build the axis with the call function
+        .each(function(d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
+        // Add axis title
+        .append("text")
+            .style("text-anchor", "middle")
+            .attr("y", -9)
+            .text(function(d) { return d; })
+            .style("fill", "black")
+
+})
 
 // Plot 3 - Overview
            
     const g3 = svg.append("g")
-                .attr("width", jobsWidth + jobsMargin.left + jobsMargin.right)
-                .attr("height", jobsHeight + jobsMargin.top + jobsMargin.bottom)
-                .attr("transform", `translate(${jobsMargin.left}, ${jobsTop})`)
+                .attr("width", barWidth + barMargin.left + barMargin.right)
+                .attr("height", barHeight + barMargin.top + barMargin.bottom)
+                .attr("transform", `translate(${barMargin.left}, ${barTop})`)
                 .attr("border", 1)
-                .attr("style", "outline: thin solid red;")   // Test Border
+                //.attr("style", "outline: thin solid red;")   // Test Border
 
     // X label
     
     g3.append("text")
-    .attr("x", jobsWidth / 2)
-    .attr("y", jobsHeight + 90)
+    .attr("x", barWidth / 2)
+    .attr("y", barHeight + 90)
     .attr("font-size", "24px")
     .attr("text-anchor", "middle")
     .text("Job Title")
@@ -126,7 +187,7 @@ d3.csv("ds_salaries.csv").then(rawData =>{
 
     // Y label
     g3.append("text")
-    .attr("x", -(jobsHeight / 2))
+    .attr("x", -(barHeight / 2))
     .attr("y", -40)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
@@ -136,13 +197,13 @@ d3.csv("ds_salaries.csv").then(rawData =>{
     // X ticks
     const x2 = d3.scaleBand()
     .domain(r.map(d => d.job_title))
-    .range([0, jobsWidth])
+    .range([0, barWidth])
     .paddingInner(0.3)
     .paddingOuter(0.2)
 
     const xAxisCall2 = d3.axisBottom(x2)
     g3.append("g")
-    .attr("transform", `translate(0, ${jobsHeight})`)
+    .attr("transform", `translate(0, ${barHeight})`)
     .call(xAxisCall2)
     .selectAll("text")
         .attr("y", "10")
@@ -153,7 +214,7 @@ d3.csv("ds_salaries.csv").then(rawData =>{
     // Y ticks
     const y2 = d3.scaleLinear()
     .domain([0, d3.max(r, d => d.count)])
-    .range([jobsHeight, 0])
+    .range([barHeight, 0])
 
     const yAxisCall2 = d3.axisLeft(y2)
                         .ticks(6)
@@ -165,34 +226,8 @@ d3.csv("ds_salaries.csv").then(rawData =>{
     .attr("y", d => y2(d.count))
     .attr("x", (d) => x2(d.job_title))
     .attr("width", x2.bandwidth)
-    .attr("height", d => jobsHeight - y2(d.count))
+    .attr("height", d => barHeight - y2(d.count))
     .attr("fill", "orange")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
