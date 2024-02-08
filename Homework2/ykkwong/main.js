@@ -131,7 +131,7 @@ d3.csv("ds_salaries.csv").then(data => {
     formattedData.push(processedObj);
   });
   
-  let y_axis_start = (barHeight+barMargin.top+230);
+  let y_axis_start = (barHeight+barMargin.top+210);
 
   // X axis
   var x = d3.scaleLinear()
@@ -139,7 +139,7 @@ d3.csv("ds_salaries.csv").then(data => {
     .range([0, barWidth]);
   
   g2.append("g")
-    .attr("transform", "translate(" + barLeft + ',' + (barHeight+barMargin.top+230) + ")")
+    .attr("transform", "translate(" + barLeft + ',' + (barHeight+barMargin.top+210) + ")")
     .call(d3.axisBottom(x))
     .selectAll("text")
       .attr("transform", "translate(-10,0)rotate(-45)")
@@ -167,18 +167,33 @@ d3.csv("ds_salaries.csv").then(data => {
     .attr("transform", "translate(" + barLeft + ',' + y_axis_start + ")")
 
   g2.append("text")
-    .attr("transform", "translate(" + (barLeft + barMargin.left + 150) + ',' + (barHeight + parallelHeight) + ")")
+    .attr("transform", "translate(" + (barLeft + barMargin.left + 150) + ',' + (barHeight + parallelHeight - 20) + ")")
     .attr("text-anchor", "middle")  
     .style("font-size", "14px") 
     .style("text-decoration", "underline")  
     .text("Average Salary in USD by Experience Level");
+  
+  // axes labels
+  g2.append("text")
+    .attr("transform", "translate(" + (barLeft + barMargin.left - 70) + ',' + (barHeight + parallelHeight + 125) + ")rotate(-90)")
+    .attr("text-anchor", "middle")  
+    .style("font-size", "14px") 
+    .style("text-decoration", "underline")  
+    .text("Experience Level");
+  
+  g2.append("text")
+    .attr("transform", "translate(" + ((barLeft + barMargin.left)*2.3) + ',' + (barHeight + parallelHeight * 1.85) + ")")
+    .attr("text-anchor", "middle")  
+    .style("font-size", "14px") 
+    .style("text-decoration", "underline")  
+    .text("Salary in USD");
   
   //-----------------------------------------------------------------------------------
   // line chart year vs average salary
   const g3 = svg.append("g")
               .attr("width", lineWidth + lineMargin.left + lineMargin.right)
               .attr("height", lineHeight + lineMargin.top + lineMargin.bottom)
-              .attr("transform", `translate(${lineMargin.left + barWidth + 200}, ${lineTop})`)
+              .attr("transform", `translate(${lineMargin.left + 50 + barWidth + 200}, ${lineTop})`)
               
   let years = groupBy(data, "work_year");
   formattedData = [];
@@ -196,7 +211,7 @@ d3.csv("ds_salaries.csv").then(data => {
   
   x = d3.scalePoint()
       .domain([...new Set(data.map(item => item['work_year']))].sort())
-      .range([ lineMargin.left, lineWidth ]);
+      .range([ lineMargin.left, lineWidth-50 ]);
   g3.append("g")
     .attr("transform", "translate(0," + (height/2 + 255) + ")")
     .call(d3.axisBottom(x));
@@ -226,7 +241,30 @@ d3.csv("ds_salaries.csv").then(data => {
       .attr("cx", d => x(d.year) )
       .attr("cy", d => y(d.average)) 
       .attr("r", 5)
-      .attr("fill", "#69b3a2")
+    .attr("fill", "#69b3a2")
+  
+  // chart title
+  g3.append("text")
+    .attr("transform", "translate(" + (200) + ',' + (350) + ")")
+    .attr("text-anchor", "middle")  
+    .style("font-size", "14px") 
+    .style("text-decoration", "underline")  
+    .text("Average salary in USD across years");
+  
+  // axes labels
+  g3.append("text")
+    .attr("transform", "translate(" + (-80) + ',' + (parallelHeight + 150) + ")rotate(-90)")
+    .attr("text-anchor", "middle")  
+    .style("font-size", "14px") 
+    .style("text-decoration", "underline")  
+    .text("USD");
+  
+  g3.append("text")
+    .attr("transform", "translate(" + (lineWidth/2 - 30) + ',' + (parallelHeight + 330) + ")")
+    .attr("text-anchor", "middle")  
+    .style("font-size", "14px") 
+    .style("text-decoration", "underline")  
+    .text("Year");
   
   
 }).catch(function(error){
