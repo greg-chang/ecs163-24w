@@ -56,7 +56,7 @@ function nameMap(n) {
 }
 
 // Parse data
-d3.csv("globalterrorismdb_0718dist.csv").then((data) => {
+d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/globalterrorismdb_0718dist.csv").then((data) => {
 
     let mapAggregate = new Object()
     let pieAggregate = new Object()
