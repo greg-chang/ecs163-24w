@@ -210,42 +210,6 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
             .attr("d", path)
             .attr("fill", (d) => colours(d.data.region))
     
-    // Render labels
-    /*svg.selectAll('allPolylines')
-        .data(pie(pieData))
-        .enter()
-        .append('polyline')
-            .attr("stroke", "black")
-            .style("fill", "none")
-            .attr("stroke-width", 1)
-            .attr('points', (d) => {
-                let posA = path.centroid(d)
-                let posB = label.centroid(d)
-                let posC = label.centroid(d)
-                let midangle = d.startAngle + (d.endAngle - d.startAngle) / 2 
-                posC[0] = radius * 0.95 * (midangle < Math.PI ? 1 : -1) 
-                return [posA, posB, posC]
-            })
-            .attr("transform", 
-            `translate(${pieDim.left + (pieDim.width / 2)},${pieDim.top + (pieDim.height / 2)})`)
-
-    svg.selectAll('allLabels')
-        .data(pie(pieData))
-        .enter()
-        .append('text')
-            .text((d) => d.data.region + ": " + d.data.deaths)
-            .attr('transform', (d) => {
-                let pos = label.centroid(d)
-                let midangle = d.startAngle + (d.endAngle - d.startAngle) / 2
-                pos[0] = radius * 0.99 * (midangle < Math.PI ? 1 : -1)
-                return 'translate(' + (pos[0] + pieDim.left + (pieDim.width / 2)) + "," + (pos[1] + pieDim.top + (pieDim.height / 2)) + ')'
-            })
-            .style('text-anchor', (d) => {
-                let midangle = d.startAngle + (d.endAngle - d.startAngle) / 2
-                return (midangle < Math.PI ? 'start' : 'end')
-            })
-            .style("font-size", "10px")*/
-    
     // Add title
     svg.append("text")
         .attr("class", "chart-title")
