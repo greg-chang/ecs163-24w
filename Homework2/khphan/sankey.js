@@ -1,49 +1,57 @@
 d3.csv("data/StudentMentalHealth.csv").then(function(data) {
-    const students = data;
     const categoryCounts = {
         "Gender": {
             "Male": {
-                "Depression": { "Yes": 0, "No": 0 },
-                "Anxiety": { "Yes": 0, "No": 0 },
-                "Panic Attack": { "Yes": 0, "No": 0 }
+                "Year 1": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } },
+                "Year 2": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } },
+                "Year 3": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } },
+                "Year 4": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } }
             },
             "Female": {
-                "Depression": { "Yes": 0, "No": 0 },
-                "Anxiety": { "Yes": 0, "No": 0 },
-                "Panic Attack": { "Yes": 0, "No": 0 }
+                "Year 1": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } },
+                "Year 2": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } },
+                "Year 3": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } },
+                "Year 4": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } }
             }
         }
     };
 
-    students.forEach(student => {
+    data.forEach(student => {
         const gender = student["Choose your gender"];
-        if (categoryCounts["Gender"].hasOwnProperty(gender)) {
+        const yearOfStudy = student["Your current year of Study"];
+        if (categoryCounts["Gender"].hasOwnProperty(gender) && categoryCounts["Gender"][gender].hasOwnProperty(yearOfStudy)) {
             const depression = student["Do you have Depression?"];
-            if (categoryCounts["Gender"][gender]["Depression"].hasOwnProperty(depression)) {
-                categoryCounts["Gender"][gender]["Depression"][depression]++;
+            if (categoryCounts["Gender"][gender][yearOfStudy]["Depression"].hasOwnProperty(depression)) {
+                categoryCounts["Gender"][gender][yearOfStudy]["Depression"][depression]++;
             }
 
             const anxiety = student["Do you have Anxiety?"];
-            if (categoryCounts["Gender"][gender]["Anxiety"].hasOwnProperty(anxiety)) {
-                categoryCounts["Gender"][gender]["Anxiety"][anxiety]++;
+            if (categoryCounts["Gender"][gender][yearOfStudy]["Anxiety"].hasOwnProperty(anxiety)) {
+                categoryCounts["Gender"][gender][yearOfStudy]["Anxiety"][anxiety]++;
             }
 
             const panicAttack = student["Do you have Panic attack?"];
-            if (categoryCounts["Gender"][gender]["Panic Attack"].hasOwnProperty(panicAttack)) {
-                categoryCounts["Gender"][gender]["Panic Attack"][panicAttack]++;
+            if (categoryCounts["Gender"][gender][yearOfStudy]["Panic Attack"].hasOwnProperty(panicAttack)) {
+                categoryCounts["Gender"][gender][yearOfStudy]["Panic Attack"][panicAttack]++;
             }
         }
     });
 
     const sankeyData = [];
-    // sankey format
-    Object.entries(categoryCounts["Gender"]).forEach(([gender, counts]) => {
-        Object.entries(counts).forEach(([category, values]) => {
-            Object.entries(values).forEach(([value, count]) => {
-                sankeyData.push({
-                    source: gender,
-                    target: `${category}: ${value}`,
-                    value: count
+    // Sankey format
+    Object.entries(categoryCounts["Gender"]).forEach(([gender, yearData]) => {
+        Object.entries(yearData).forEach(([year, mentalHealthData]) => {
+            Object.entries(mentalHealthData).forEach(([category, values]) => {
+                Object.entries(values).forEach(([value, count]) => {
+                    sankeyData.push({
+                        source: gender,
+                        target: year,
+                        value: 1
+                    }, {
+                        source: year,
+                        target: `${category}: ${value}`,
+                        value: count
+                    });
                 });
             });
         });
@@ -56,14 +64,14 @@ d3.csv("data/StudentMentalHealth.csv").then(function(data) {
         .attr("width", 900)
         .attr("height", 700);
 
-    // title
+    // Title
     svg.append("text")
         .attr("x", 400)
         .attr("y", 30)
         .attr("text-anchor", "middle")
         .attr("font-size", "24px")
         .attr("font-weight", "bold")
-        .text("Students' Gender Influence on Mental Health Conditions");
+        .text("Students' Gender and Year of Study Influence on Mental Health Conditions");
 
     const sankey = d3.sankey()
         .nodeWidth(15)
@@ -102,36 +110,10 @@ d3.csv("data/StudentMentalHealth.csv").then(function(data) {
         .attr("stroke-opacity", 0.2)
         .attr("fill", "none")
         .attr("stroke-width", d => Math.max(1, d.width));
-
-    // legends
-    const legend = svg.append("g")
-        .attr("transform", "translate(720, 425)");
-    let offsetY = 0;
-    Object.entries(categoryCounts["Gender"]).forEach(([gender, counts]) => {
-        legend.append("text")
-            .attr("x", 0)
-            .attr("y", offsetY)
-            .text(gender)
-            .attr("font-weight", "bold");
-
-        offsetY += 20;
-
-        Object.entries(counts).forEach(([category, values]) => {
-            Object.entries(values).forEach(([value, count]) => {
-                legend.append("text")
-                    .attr("x", 00)
-                    .attr("y", offsetY)
-                    .text(`${category}: ${value} (${count})`);
-
-                offsetY += 20;
-            });
-        });
-
-        offsetY += 10;
-    });
+          
 });
 
-// sankey data structure
+// Sankey data structure
 function generateSankeyData(data) {
     const nodesMap = new Map();
     let id = 0;
