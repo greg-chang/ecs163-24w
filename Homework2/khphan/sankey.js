@@ -1,56 +1,56 @@
+function capitalize(word) {
+    const lower = word.toLowerCase();
+    return word.charAt(0).toUpperCase() + lower.slice(1);
+}
+
 d3.csv("data/StudentMentalHealth.csv").then(function(data) {
-    const categoryCounts = {
-        "Gender": {
-            "Male": {
-                "Year 1": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } },
-                "Year 2": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } },
-                "Year 3": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } },
-                "Year 4": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } }
-            },
-            "Female": {
-                "Year 1": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } },
-                "Year 2": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } },
-                "Year 3": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } },
-                "Year 4": { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } }
-            }
-        }
-    };
+    const categoryCounts = {};
 
     data.forEach(student => {
         const gender = student["Choose your gender"];
-        const yearOfStudy = student["Your current year of Study"];
-        if (categoryCounts["Gender"].hasOwnProperty(gender) && categoryCounts["Gender"][gender].hasOwnProperty(yearOfStudy)) {
-            const depression = student["Do you have Depression?"];
-            if (categoryCounts["Gender"][gender][yearOfStudy]["Depression"].hasOwnProperty(depression)) {
-                categoryCounts["Gender"][gender][yearOfStudy]["Depression"][depression]++;
-            }
+        const yearOfStudy = capitalize(student["Your current year of Study"]);
+        const cgpa = `CGPA: ${student["What is your CGPA?"]}`;
 
-            const anxiety = student["Do you have Anxiety?"];
-            if (categoryCounts["Gender"][gender][yearOfStudy]["Anxiety"].hasOwnProperty(anxiety)) {
-                categoryCounts["Gender"][gender][yearOfStudy]["Anxiety"][anxiety]++;
-            }
-
-            const panicAttack = student["Do you have Panic attack?"];
-            if (categoryCounts["Gender"][gender][yearOfStudy]["Panic Attack"].hasOwnProperty(panicAttack)) {
-                categoryCounts["Gender"][gender][yearOfStudy]["Panic Attack"][panicAttack]++;
-            }
+        if (!categoryCounts[gender]) {
+            categoryCounts[gender] = {};
         }
+        if (!categoryCounts[gender][yearOfStudy]) {
+            categoryCounts[gender][yearOfStudy] = {};
+        }
+        if (!categoryCounts[gender][yearOfStudy][cgpa]) {
+            categoryCounts[gender][yearOfStudy][cgpa] = { "Depression": { "Yes": 0, "No": 0 }, "Anxiety": { "Yes": 0, "No": 0 }, "Panic Attack": { "Yes": 0, "No": 0 } };
+        }
+
+        const depression = student["Do you have Depression?"];
+        const anxiety = student["Do you have Anxiety?"];
+        const panicAttack = student["Do you have Panic attack?"];
+
+        categoryCounts[gender][yearOfStudy][cgpa]["Depression"][depression]++;
+        categoryCounts[gender][yearOfStudy][cgpa]["Anxiety"][anxiety]++;
+        categoryCounts[gender][yearOfStudy][cgpa]["Panic Attack"][panicAttack]++;
     });
 
     const sankeyData = [];
+
     // Sankey format
-    Object.entries(categoryCounts["Gender"]).forEach(([gender, yearData]) => {
-        Object.entries(yearData).forEach(([year, mentalHealthData]) => {
-            Object.entries(mentalHealthData).forEach(([category, values]) => {
-                Object.entries(values).forEach(([value, count]) => {
-                    sankeyData.push({
-                        source: gender,
-                        target: year,
-                        value: 1
-                    }, {
-                        source: year,
-                        target: `${category}: ${value}`,
-                        value: count
+    Object.entries(categoryCounts).forEach(([gender, genderData]) => {
+        Object.entries(genderData).forEach(([yearOfStudy, yearData]) => {
+            Object.entries(yearData).forEach(([cgpa, cgpaData]) => {
+                Object.entries(cgpaData).forEach(([category, values]) => {
+                    Object.entries(values).forEach(([value, count]) => {
+                        sankeyData.push({
+                            source: gender,
+                            target: yearOfStudy,
+                            value: 1
+                        }, {
+                            source: yearOfStudy,
+                            target: cgpa,
+                            value: 1
+                        }, {
+                            source: cgpa,
+                            target: `${category}: ${value}`,
+                            value: count
+                        });
                     });
                 });
             });
@@ -62,16 +62,16 @@ d3.csv("data/StudentMentalHealth.csv").then(function(data) {
     const svg = d3.select("body")
         .append("svg")
         .attr("width", 900)
-        .attr("height", 700);
+        .attr("height", 700)
 
     // Title
     svg.append("text")
-        .attr("x", 400)
+        .attr("x", 435)
         .attr("y", 30)
         .attr("text-anchor", "middle")
         .attr("font-size", "24px")
         .attr("font-weight", "bold")
-        .text("Students' Gender and Year of Study Influence on Mental Health Conditions");
+        .text("Students' Gender, Year of Study, and CGPA Influence on Mental Health Conditions");
 
     const sankey = d3.sankey()
         .nodeWidth(15)
@@ -110,7 +110,59 @@ d3.csv("data/StudentMentalHealth.csv").then(function(data) {
         .attr("stroke-opacity", 0.2)
         .attr("fill", "none")
         .attr("stroke-width", d => Math.max(1, d.width));
-          
+
+    
+    // Extract categories and corresponding colors
+    const uniqueCategories = [...new Set(sankeyData.map(data => data.target))];
+    const categoryColors = {};
+    uniqueCategories.forEach((category, index) => {
+        categoryColors[category] = color(category);
+    });
+
+    // Parse categories 
+    const parsedCategories = uniqueCategories.map(category => {
+        let [gender, year, cgpa, condition] = category.split(" > ");
+        if (condition !== "Depression" && condition !== "Anxiety" && condition !== "Panic Attack") {
+            condition = "Mental Health";
+        }
+        return { category, gender, year, cgpa, condition };
+    });
+
+    // Sort parsed categories
+    parsedCategories.sort((a, b) => {
+        if (a.gender !== b.gender) {
+            return a.gender.localeCompare(b.gender);
+        }
+        if (a.year !== b.year) {
+            return a.year.localeCompare(b.year);
+        }
+        if (a.cgpa !== b.cgpa) {
+            return a.cgpa.localeCompare(b.cgpa);
+        }
+        return a.condition.localeCompare(b.condition);
+    });
+
+    // legend
+    const legend = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", "translate(730,60)")
+        .selectAll("g")
+        .data(parsedCategories)
+        .enter().append("g")
+        .attr("transform", (d, i) => `translate(0,${i * 20})`);
+
+    legend.append("rect")
+        .attr("x", 0)
+        .attr("width", 15)
+        .attr("height", 15)
+        .style("fill", d => categoryColors[d.category]);
+
+    legend.append("text")
+        .attr("x", 20)
+        .attr("y", 9)
+        .attr("dy", "0.35em")
+        .text(d => d.category);
+
 });
 
 // Sankey data structure

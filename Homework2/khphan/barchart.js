@@ -72,9 +72,9 @@ d3.csv("data/StudentMentalHealth.csv").then(function(data) {
         }
     });
 
-    const margin = { top: 70, right: 120, bottom: 120, left: 60 };
-    const width = 900 - margin.left - margin.right;
-    const height = 900 - margin.top - margin.bottom;
+    const margin = { top: 60, right: 120, bottom: 120, left: 60 };
+    const width = 840 - margin.left - margin.right;
+    const height = 840 - margin.top - margin.bottom;
 
     const svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -170,7 +170,7 @@ d3.csv("data/StudentMentalHealth.csv").then(function(data) {
 
     // title
     svg.append("text")
-        .attr("x", width / 2)
+        .attr("x", ((width / 2) + 20))
         .attr("y", -30)
         .attr("text-anchor", "middle")
         .attr("font-size", "24px")
