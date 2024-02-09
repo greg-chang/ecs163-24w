@@ -8,16 +8,25 @@
         body {
             font-family: 'Arial', sans-serif;
 			display: flex;
-			flex-direction: column;
+			flex-direction: column; 
 			align-items: center;
 			justify-content: center;
 			margin: 0;
-			padding: 20px;
+			padding: 0;
+			height: 100vh; 
+			width: 100vw;
 			background-color: #f4f4f4;
         }
 
-        #bar-chart, #mental-health-pie-chart, #stream-chart {
-            margin: 20px;
+        .chart-container {
+            display: flex; 
+            justify-content: space-around; 
+            width: 100%; 
+        }
+
+        #bar-chart, #mental-health-pie-chart {
+			flex: 1; 
+			margin: 20px;
 			border: 1px solid #ccc;
 			background-color: #fff;
 			box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -65,9 +74,11 @@
     </style>
 </head>
 <body>
-    <div id="bar-chart"></div>
-    <div id="mental-health-pie-chart"></div>
-	<svg id="stream-chart" width="960" height="600"></svg>
+    <div class="chart-container">
+        <div id="bar-chart"></div>
+        <div id="mental-health-pie-chart"></div>
+	</div>
+	<svg id="stream-chart" width="1200" height="500"></svg>
     <script src="main.js"></script>
 </body>
 </html>

@@ -42,9 +42,9 @@ function processData(data) {
 
 
 function drawBarChart(data) {
-    const margin = {top: 30, right: 30, bottom: 100, left: 60},
-        width = 960 - margin.left - margin.right,
-        height = 800 - margin.top - margin.bottom;
+    const margin = {top: 30, right: 30, bottom: 50, left: 60},
+        width = 480 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
 
     const svg = d3.select("#bar-chart")
       .append("svg")
@@ -91,13 +91,13 @@ function drawBarChart(data) {
         .attr("fill", "#69b3a2");
 
     svg.append("text")             
-      .attr("transform", `translate(${width/2}, ${height + margin.top + 40})`)
+      .attr("transform", `translate(${width/2}, ${height + margin.top + 55})`)
       .style("text-anchor", "middle")
       .text("CGPA Range");
 
     svg.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", 0 - margin.left / 1.2)
+      .attr("y", 0 - margin.left / 1)
       .attr("x",0 - (height / 2))
       .attr("dy", "1em")
       .style("text-anchor", "middle")
@@ -105,7 +105,7 @@ function drawBarChart(data) {
 
     svg.append("text")
         .attr("x", (width / 2))             
-        .attr("y", 0 - (margin.top / 5))
+        .attr("y", 0 - (margin.top / 4))
         .attr("text-anchor", "middle")  
         .style("font-size", "16px") 
         .style("text-decoration", "underline") 
@@ -120,9 +120,9 @@ function drawMentalHealthIssuesPieChart(data) {
         const count = d.mentalHealthIssuesCount.toString(); 
         issuesCount[count] = (issuesCount[count] || 0) + 1;
     });
-    const margin = {top: 60, right: 30, bottom: 100, left: 60},
+    const margin = {top: 60, right: 30, bottom: 50, left: 60},
         width = 960 - margin.left - margin.right,
-        height = 600 - margin.top - margin.bottom,
+        height = 480 - margin.top - margin.bottom,
         radius = Math.min(width, height) / 2; 
     
     const svg = d3.select("#mental-health-pie-chart")
@@ -212,7 +212,7 @@ function drawMentalHealthIssuesPieChart(data) {
 function drawStreamChart(data) {
     const dimensions = ["CGPA", "Depression", "Anxiety", "PanicAttack"];
 
-    const margin = {top: 50, right: 10, bottom: 30, left: 50},
+    const margin = {top: 10, right: 10, bottom: 10, left: 50},
     width = 960 - margin.left - margin.right,
     height = 1200 - margin.top - margin.bottom;
 
@@ -388,7 +388,7 @@ svg.append("text")
 svg.append("text")
     .attr("class", "axis-label")
     .attr("x", width / 2)
-    .attr("y", height + margin.bottom / 2 + 40)
+    .attr("y", height + margin.bottom / 2 + 20)
     .attr("text-anchor", "middle")
     .text("Year");
 
@@ -418,3 +418,4 @@ legendItem.append("text")
     .attr("dy", "0.35em")
     .attr("text-anchor", "end")
     .text(function(d) {return d;});
+
