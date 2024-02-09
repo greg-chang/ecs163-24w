@@ -105,7 +105,7 @@ d3.csv("data/StudentMentalHealth.csv").then(function(data) {
 
     // legends
     const legend = svg.append("g")
-        .attr("transform", "translate(720, 445)");
+        .attr("transform", "translate(720, 425)");
     let offsetY = 0;
     Object.entries(categoryCounts["Gender"]).forEach(([gender, counts]) => {
         legend.append("text")
