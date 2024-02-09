@@ -173,7 +173,7 @@ function createStar(data) {
         return coordinates;
     }
 
-    createTypeLegend(svg, types, width, height, -120, 75);
+    createTypeLegend(svg, types, width, height, -50, 100);
 
     svg.selectAll("path")
     .data(chartData)
@@ -192,7 +192,7 @@ function createStar(data) {
 function createNormSPScatter(data) {
     const types = ["Dragon", "Steel", "Rock", "Normal"]
     const margin = {top: 50, right: 150, bottom: 50, left: 75};
-    const width = 275;
+    const width = 300;
     const height = 275;
 
     data = data.filter(d => {
