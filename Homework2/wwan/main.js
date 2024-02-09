@@ -1,8 +1,8 @@
 const width = window.innerWidth;
 const height = window.innerHeight;
 
-let pieLeft = 100, pieTop = 0;
-let pieMargin = { top: 10, right: 30, bottom: 30, left: 60 },
+let pieLeft = 0, pieTop = 0;
+let pieMargin = { top: 200, right: 10, bottom: 30, left: 250 },
     pieWidth = 400 - pieMargin.left - pieMargin.right,
     pieHeight = 350 - pieMargin.top - pieMargin.bottom;
 
@@ -40,7 +40,6 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
     // for the most common listening time, process most common platform
     mostComHours = rawData.filter(d => d.HoursPerDay == 2);
     mostUsedService = mostComHours.reduce((s, { PrimaryService }) => (s[PrimaryService] = (s[PrimaryService] || 0) + 1, s), {});
-    mostUsedServiceObj = Object.keys(mostUsedService).map((key) => ({ Service: key, count: mostUsedService[key] }));
 
 
     //context chart - most common listening time for all people
@@ -101,79 +100,105 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
         .attr("x", (d) => x2(d.hours))
         .attr("width", x2.bandwidth)
         .attr("height", d => hourHeight - y2(d.count))
-        .attr("fill", "grey")
+        .attr("fill", "#2b6ed9")
 
+    // title
     g1.append("text")
         .attr("x", (hourWidth / 2))
-        .attr("y", 0 - (hourMargin.top / 2))
+        .attr("y", -3 - (hourMargin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "20px")
         .text("How Long Do People Listen To Music?");
 
-    // space
-    const g2 = svg.append("g")
-        .attr("width", distrWidth + distrMargin.left + distrMargin.right)
-        .attr("height", distrHeight + distrMargin.top + distrMargin.bottom)
-        .attr("transform", `translate(${distrLeft}, ${distrTop})`)
+    // // space
+    // const g2 = svg.append("g")
+    //     .attr("width", distrWidth + distrMargin.left + distrMargin.right)
+    //     .attr("height", distrHeight + distrMargin.top + distrMargin.bottom)
+    //     .attr("transform", `translate(${distrLeft}, ${distrTop})`)
 
-    //plot 2 - pie chart
+    //plot 2
+
+    const radius = Math.min(width, height) / 2.3 - pieMargin.left;
+    var keys2 = Object.keys(mostUsedService)
+
+    var color = d3.scaleOrdinal()
+        .domain(keys2)
+        .range(["#1b65de", "#bd1bde", "#1bde89", "#de1b3b", "#9dde1b", "#1bdede"]);
 
     // Set up pie and arcs
-    const pie = d3.pie()
-        .value(d => d.value);
+    var pie = d3.pie()
+        .value(function (d) { return d[1] })
 
-    const arc = d3.arc()
+    var arcGenerator = d3.arc()
         .innerRadius(0)
-        .outerRadius(Math.min(width, height) / 2 - 1);
+        .outerRadius(radius)
 
-    const labelRadius = arc.outerRadius()() * 0.75;
+    var pieData = pie(Object.entries(mostUsedService))
 
-    // For creating labels
-    const arcLabel = d3.arc()
-        .innerRadius(labelRadius)
-        .outerRadius(labelRadius);
-
-    const arcs = pie(mostUsedServiceObj);
-    console.log(mostUsedServiceObj)
-
-    arcs.sort((a, b) => a.data.Service.localeCompare(b.data.Service));
+    console.log(d3.entries(mostUsedService))
 
     const g3 = svg.append("g")
         .attr("width", pieWidth + pieMargin.left + pieMargin.right)
         .attr("height", pieHeight + pieMargin.top + pieMargin.bottom)
         .attr("transform", `translate(${pieMargin.left}, ${pieMargin.top})`)
 
-    // Create the color scale.
+    // pie chart
+    // reference: https://d3-graph-gallery.com/graph/pie_annotation.html
+    g3
+        .selectAll('slices')
+        .data(pieData)
+        .enter()
+        .append('path')
+        .attr('d', arcGenerator)
+        .attr('fill', function (d) { return (color(d.data[1])) })
+        .attr("stroke", "black")
+        .style("stroke-width", "2px")
+        .style("opacity", 0.7)
+
+    // labels
+    g3
+        .selectAll('mySlices')
+        .data(pieData)
+        .enter()
+        .append('text')
+        .text(function (d) { return d.value })
+        .attr("transform", function (d) { return "translate(" + arcGenerator.centroid(d) + ")"; })
+        .style("text-anchor", "middle")
+        .style("font-size", 21)
 
 
-    // Add a sector path for each value.
-    g3.append("g")
-        .attr("stroke", "white")
-        .selectAll()
-        .data(arcs)
-        .join("path")
-        .attr("fill", "grey")
-        .attr("d", arc)
-        .append("title")
-        .text(d => `${d.data.Service}: ${d.data.count.toLocaleString("en-US")}`);
+    // legend
+    // reference: https://d3-graph-gallery.com/graph/custom_legend.html
+    var size = 15
+    g3.selectAll("mydots")
+        .data(keys2)
+        .enter()
+        .append("rect")
+        .attr("x", 200)
+        .attr("y", function (d, i) { return -125 + i * (size + 5) }) // 100 is where the first dot appears. 25 is the distance between dots
+        .attr("width", size)
+        .attr("height", size)
+        .style("fill", function (d) { return color(d) })
 
-    // Create a new arc generator to place a label close to the edge.
-    // The label shows the value if there is enough room.
-    g3.append("g")
+    // Add one dot in the legend for each name.
+    g3.selectAll("mylabels")
+        .data(keys2)
+        .enter()
+        .append("text")
+        .attr("x", 200 + size * 1.2)
+        .attr("y", function (d, i) { return -125 + i * (size + 5) + (size / 2) }) // 100 is where the first dot appears. 25 is the distance between dots
+        .style("fill", function (d) { return color(d) })
+        .text(function (d) { return d })
+        .attr("text-anchor", "left")
+        .style("alignment-baseline", "middle")
+
+    // title
+    g3.append("text")
+        .attr("x", 70 - (pieWidth / 2))
+        .attr("y", -70 - (pieMargin.top / 2))
         .attr("text-anchor", "middle")
-        .selectAll()
-        .data(arcs)
-        .join("text")
-        .attr("transform", d => `translate(${arcLabel.centroid(d)})`)
-        .call(text => text.append("tspan")
-            .attr("y", "-0.4em")
-            .attr("font-weight", "bold")
-            .text(d => d.data.Service))
-        .call(text => text.filter(d => (d.endAngle - d.startAngle) > 0.25).append("tspan")
-            .attr("x", 0)
-            .attr("y", "0.7em")
-            .attr("fill-opacity", 0.7)
-            .text(d => d.data.count.toLocaleString("en-US")));
+        .style("font-size", "20px")
+        .text("Most Popular Service For 2 Hour Listeners");
 
 
 }).catch(function (error) {
