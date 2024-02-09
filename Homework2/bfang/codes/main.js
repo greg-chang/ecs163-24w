@@ -304,7 +304,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .style("font-weight", "bold")
-        .text("Pokemon's Composition in the Whole Dataset");
+        .text("Each Type of Pokemon's Composition in the Whole Dataset");
 
 }).catch(function(error){
     console.log(error);
