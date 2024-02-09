@@ -5,9 +5,9 @@ let scatterMargin = {top: 10, right: 10, bottom: 10, left: 65},
     scatterWidth = ((2 * width)/5) - scatterMargin.left - scatterMargin.right,
     scatterHeight = 250 - scatterMargin.top - scatterMargin.bottom;
 
-let parallelLeft = 1000;
+let parallelLeft = 700;
 let parallelMargin = {top: 25, right: 10, bottom: 0, left: 0},
-    parallelWidth = 1050 - parallelMargin.left - parallelMargin.right,
+    parallelWidth = 1500 - parallelMargin.left - parallelMargin.right,
     parallelHeight = 600 - parallelMargin.top - parallelMargin.bottom;
 
 let barTop = 350;
@@ -19,6 +19,8 @@ let barMargin = {top: 10, right: 30, bottom: 10, left: 65},
 d3.csv("ds_salaries.csv").then(rawData =>{
     console.log("rawData", rawData);
     
+    let parRawData = rawData;
+
     rawData.forEach(function(d){
         d.salary_in_usd = Number(d.salary_in_usd);
         d.remote_ratio = Number(d.remote_ratio);
@@ -107,64 +109,95 @@ d3.csv("ds_salaries.csv").then(rawData =>{
 // Plot 2
 
 // append the svg object to the body of the page
-const g2 = svg.append("g")
+const g4 = svg.append("g")
                 .attr("width", parallelWidth + parallelMargin.left + parallelMargin.right)
                 .attr("height", parallelHeight + parallelMargin.top + parallelMargin.bottom)
                 .attr("transform",`translate(${parallelLeft},${parallelMargin.top})`)
-                //.attr("style", "outline: thin solid red;")  // Test Border
+                .attr("style", "outline: thin solid red;")  // Test Border
 
-// Parse the Data
-d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/iris.csv").then( function(data) {
+    
+// Extract the list of dimensions we want to keep in the plot. Here I keep all except the column called Species
+dimensions = Object.keys(parRawData[0])
+    .filter(function(d) 
+    { return (d != "work_year") && (d != "job_title") && (d != "employment_type") && (d != "remote_ratio") && (d != "salary") && (d != "salary_currency") && (d != "employee_residence") && (d != "company_location") })
 
-  // Extract the list of dimensions we want to keep in the plot. Here I keep all except the column called Species
-  dimensions = Object.keys(data[0]).filter(function(d) { return d != "Species" })
+    console.log(dimensions);
 
-  // For each dimension, I build a linear scale. I store all in a y object
-  const y = {}
-  for (i in dimensions) {
-    name = dimensions[i]
-    y[name] = d3.scaleLinear()
-      .domain( d3.extent(data, function(d) { return +d[name]; }) )
-      .range([parallelHeight, 0])
-  }
 
-  // Build the X scale -> it find the best position for each Y axis
-  x = d3.scalePoint()
+let keys1 = {}
+let counter1 = 4
+parRawData.forEach(item => {
+    const levels = item.experience_level;
+    let key = 0;
+    if(keys1.hasOwnProperty(levels))
+        key = keys1[levels];
+    else {
+        key = --counter1;
+        keys1[levels] = key;
+    }
+    item.experience_level = key;
+})
+
+let keys2 = {}
+let counter2 = 0
+parRawData.forEach(item => {
+    const jobs = item.company_size;
+    let key = 0;
+    if(keys2.hasOwnProperty(jobs))
+        key = keys2[jobs];
+    else {
+        key = ++counter2;
+        keys2[jobs] = key;
+    }
+    item.company_size = key;
+})
+
+
+console.log(dimensions);
+// For each dimension, I build a linear scale. I store all in a y object
+const y = {}
+for (i in dimensions) {
+    scaleName = dimensions[i]
+    y[scaleName] = d3.scaleLinear()
+    .domain( d3.extent(parRawData, function(d) { return +d[scaleName]; }) )
+    .range([parallelHeight, 0])
+}
+
+// Build the X scale -> it find the best position for each Y axis
+x = d3.scalePoint()
     .range([0, parallelWidth])
     .padding(1)
     .domain(dimensions);
 
-  // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
-  function path(d) {
-      return d3.line()(dimensions.map(function(p) { return [x(p), y[p](d[p])]; }));
-  }
+// The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
+function path(d) {
+    return d3.line()(dimensions.map(function(p) { return [x(p), y[p](d[p])]; }));
+}
 
-  // Draw the lines
-  g2.selectAll("myPath")
-        .data(data)
-        .join("path")
-        .attr("d",  path)
-        .style("fill", "none")
-        .style("stroke", "#69b3a2")
-        .style("opacity", 0.5)
+// Draw the lines
+g4.selectAll("myPath")
+    .data(parRawData)
+    .join("path")
+    .attr("d",  path)
+    .style("fill", "none")
+    .style("stroke", "#69b3a2")
+    .style("opacity", 0.5)
 
-  // Draw the axis:
-  g2.selectAll("myAxis")
-        // For each dimension of the dataset I add a 'g' element:
-        .data(dimensions).enter()
-        .append("g")
-        // I translate this element to its right position on the x axis
-        .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
-        // And I build the axis with the call function
-        .each(function(d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
-        // Add axis title
-        .append("text")
-            .style("text-anchor", "middle")
-            .attr("y", -9)
-            .text(function(d) { return d; })
-            .style("fill", "black")
-
-})
+// Draw the axis:
+g4.selectAll("myAxis")
+    // For each dimension of the dataset I add a 'g' element:
+    .data(dimensions).enter()
+    .append("g")
+    // I translate this element to its right position on the x axis
+    .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+    // And I build the axis with the call function
+    .each(function(d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
+    // Add axis title
+    .append("text")
+        .style("text-anchor", "middle")
+        .attr("y", -9)
+        .text(function(d) { return d; })
+        .style("fill", "black")
 
 // Plot 3 - Overview
            
