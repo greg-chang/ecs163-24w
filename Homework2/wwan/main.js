@@ -21,14 +21,13 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
     console.log("rawData", rawData);
 
     rawData.forEach(function (d) {
-        d.Age = Number(d.Age);
-        d.HoursPerDay = Number(d.HoursPerDay);
+        d.Age = Number(d.Age)
+        d.HoursPerDay = Number(d.HoursPerDay)
     });
 
     // process data for most common listening time
-    parallelData = rawData.map(d => { return { "Age": d.Age, "HoursPerDay": d.HoursPerDay, "Depression": d.Depression, "Anxiety": d.Anxiety } })
-    hoursContext = rawData.reduce((s, { HoursPerDay }) => (s[HoursPerDay] = (s[HoursPerDay] || 0) + 1, s), {});
-    r = Object.keys(hoursContext).map((key) => ({ hours: Number(key), count: hoursContext[key] }));
+    hoursContext = rawData.reduce((s, { HoursPerDay }) => (s[HoursPerDay] = (s[HoursPerDay] || 0) + 1, s), {})
+    r = Object.keys(hoursContext).map((key) => ({ hours: Number(key), count: hoursContext[key] }))
 
     // Sort data in ascending order
     r.sort(function (x, y) {
@@ -39,7 +38,11 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
 
     // for the most common listening time, process most common platform
     mostComHours = rawData.filter(d => d.HoursPerDay == 2);
-    mostUsedService = mostComHours.reduce((s, { PrimaryService }) => (s[PrimaryService] = (s[PrimaryService] || 0) + 1, s), {});
+    mostUsedService = mostComHours.reduce((s, { PrimaryService }) => (s[PrimaryService] = (s[PrimaryService] || 0) + 1, s), {})
+
+    // process data for parallel plot
+    parallelFilter = rawData.filter(d => (d.BPM < 400))
+    parallelData = parallelFilter.map(d => { return { "Age": d.Age, "HoursPerDay": d.HoursPerDay, "BPM": d.BPM, "Depression": d.Depression } })
 
 
     //context chart - most common listening time for all people
@@ -105,7 +108,7 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
     // title
     g1.append("text")
         .attr("x", (hourWidth / 2))
-        .attr("y", -3 - (hourMargin.top / 2))
+        .attr("y", 15 - (hourMargin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "20px")
         .text("How Long Do People Listen To Music?");
@@ -158,7 +161,7 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
         .text(function (d) { return d.value })
         .attr("transform", function (d) { return "translate(" + arcGenerator.centroid(d) + ")"; })
         .style("text-anchor", "middle")
-        .style("font-size", 21)
+        .style("font-size", 25)
 
 
     // legend
