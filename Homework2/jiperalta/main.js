@@ -19,10 +19,140 @@ const colorMap = new Map([
     ["Fairy", "#D685AD"],
 ]);
 
+function getTypeData(data, type) {
+    const retData = {
+        type: type,
+        color: colorMap.get(type),
+        speed: 0,
+        attack: 0,
+        spAttack: 0,
+        defense: 0,
+        spDefense: 0
+    };
+
+    count = 0;
+    data.forEach(d => {
+        if (d.type != type)
+            return;
+
+        retData.speed += d.speed;
+        retData.attack += d.attack;
+        retData.spAttack += d.spAttack;
+        retData.defense += d.defense;
+        retData.spDefense += d.spDefense;
+        count += 1;
+    });
+
+    retData.speed /= count;
+    retData.attack /= count;
+    retData.spAttack /= count;
+    retData.defense /= count;
+    retData.spDefense /= count;
+
+    return retData;
+}
+
+function createStar(data) {
+    const labels = ["Speed", "Attack", "Sp. Attack", "Defense", "Sp. Def"]
+    const width = 350;
+    const height = 350;
+    const maxStat = 150;
+    const margin = 50;
+
+    const chartData = [];
+    chartData.push(getTypeData(data, "Steel"));
+    chartData.push(getTypeData(data, "Dragon"));
+    chartData.push(getTypeData(data, "Rock"));
+    chartData.push(getTypeData(data, "Normal"));
+
+    const svg = d3.select("#plot3")
+        .attr("width", width + margin)
+        .attr("height", height + margin)
+        .style("font", "10px arial")
+
+    const scale = d3.scaleLinear()
+        .domain([0, maxStat])
+        .range([0, width / 2 - margin]);
+
+    function getCoords(angle, value) {
+        const x = Math.cos(angle) * scale(value);
+        const y = Math.sin(angle) * scale(value);
+        return {"x": width / 2 + x, "y": height / 2 - y};
+    }
+
+    let labelData = labels.map((name, i) => {
+        let angle = (Math.PI / 2) + (2 * Math.PI * i / labels.length);
+        return {
+            name: name,
+            angle: angle,
+            lineCoord: getCoords(angle, maxStat),
+            labelCoord: getCoords(angle, maxStat + 10)
+        };
+    });
+
+    svg.selectAll("line")
+    .data(labelData)
+    .join(
+        enter => enter.append("line")
+            .attr("x1", width / 2)
+            .attr("y1", height / 2)
+            .attr("x2", d => d.lineCoord.x)
+            .attr("y2", d => d.lineCoord.y)
+            .attr("stroke","black")
+    );
+    svg.selectAll(".axislabel")
+    .data(labelData)
+    .join(
+        enter => enter.append("text")
+            .attr("x", d => d.labelCoord.x)
+            .attr("y", d => d.labelCoord.y)
+            .text(d => d.name)
+    );
+
+    let line = d3.line()
+        .x(d => d.x)
+        .y(d => d.y);
+
+    function getPathCoords(typeData) {
+        let coordinates = [];
+        let angle = 0;
+
+        angle = (Math.PI / 2) + (2 * Math.PI * 0 / labels.length);
+        coordinates.push(getCoords(angle, typeData.speed));
+
+        angle = (Math.PI / 2) + (2 * Math.PI * 1 / labels.length);
+        coordinates.push(getCoords(angle, typeData.attack));
+
+        angle = (Math.PI / 2) + (2 * Math.PI * 2 / labels.length);
+        coordinates.push(getCoords(angle, typeData.spAttack));
+
+        angle = (Math.PI / 2) + (2 * Math.PI * 3 / labels.length);
+        coordinates.push(getCoords(angle, typeData.defense));
+
+        angle = (Math.PI / 2) + (2 * Math.PI * 4 / labels.length);
+        coordinates.push(getCoords(angle, typeData.spDefense));
+
+        return coordinates;
+    }
+
+    svg.selectAll("path")
+    .data(chartData)
+    .join(
+        enter => enter.append("path")
+            .attr("stroke", d => { return d.color; })
+            .attr("fill", d => { return d.color; })
+            .datum(d => getPathCoords(d))
+            .attr("d", line)
+            .attr("stroke-width", 3)
+            .attr("stroke-opacity", 1)
+            .attr("opacity", 0.75)
+    );
+}
+
 function createNormSPScatter(data) {
     const margin = {top: 50, right: 50, bottom: 50, left: 50};
-    const width = 800;
-    const height = 800;
+    const width = 350;
+    const height = 350;
 
     data = data.filter((d) =>{
         if (
@@ -62,7 +192,7 @@ function createNormSPScatter(data) {
         .append("circle")
             .attr("cx", d => { return xAxis(d.totalAttack); } )
             .attr("cy", d => { return yAxis(d.totalDefense); } )
-            .attr("r", 8.0)
+            .attr("r", 4.0)
             .style("fill", d => { return colorMap.get(d.type); })
 }
 
@@ -140,16 +270,19 @@ d3.csv("pokemon.csv").then(rawData =>{
             spAttack: Number(d.Sp_Atk),
             defense: Number(d.Defense),
             spDefense: Number(d.Sp_Def),
+            speed: Number(d.Speed),
             type: d.Type_1
         };
     });
 
     filteredData.forEach(d=>{
-        d.totalStats = d.attack + d.spAttack + d.defense + d.spDefense
+        d.totalStats = d.attack + d.spAttack + d.defense + d.spDefense + d.speed
         d.totalAttack = d.attack + d.spAttack
         d.totalDefense = d.defense + d.spDefense 
     });
 
     createNormSPScatter(filteredData);
     createBarChart(filteredData);
+    createStar(filteredData);
+    console.log(getTypeData(filteredData, "Rock"));
 });
