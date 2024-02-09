@@ -6,12 +6,12 @@ let pieMargin = { top: 200, right: 10, bottom: 30, left: 250 },
     pieWidth = 400 - pieMargin.left - pieMargin.right,
     pieHeight = 350 - pieMargin.top - pieMargin.bottom;
 
-let distrLeft = 400, distrTop = 0;
-let distrMargin = { top: 10, right: 30, bottom: 30, left: 60 },
-    distrWidth = 400 - distrMargin.left - distrMargin.right,
-    distrHeight = 350 - distrMargin.top - distrMargin.bottom;
+let parallelLeft = 300, parallelTop = 25;
+let parallelMargin = { top: 10, right: 400, bottom: 30, left: 200 },
+    parallelWidth = 400 - parallelMargin.left - parallelMargin.right,
+    parallelHeight = 350 - parallelMargin.top - parallelMargin.bottom;
 
-let hourLeft = 0, hourTop = 400;
+let hourLeft = 0, hourTop = 425;
 let hourMargin = { top: 10, right: 500, bottom: 30, left: 60 },
     hourWidth = width - hourMargin.left - hourMargin.right,
     hourHeight = height - 450 - hourMargin.top - hourMargin.bottom;
@@ -26,8 +26,8 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
     });
 
     // process data for most common listening time
+    parallelData = rawData.map(d => { return { "Age": d.Age, "HoursPerDay": d.HoursPerDay, "Depression": d.Depression, "Anxiety": d.Anxiety } })
     hoursContext = rawData.reduce((s, { HoursPerDay }) => (s[HoursPerDay] = (s[HoursPerDay] || 0) + 1, s), {});
-    console.log(hoursContext)
     r = Object.keys(hoursContext).map((key) => ({ hours: Number(key), count: hoursContext[key] }));
 
     // Sort data in ascending order
@@ -110,12 +110,6 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
         .style("font-size", "20px")
         .text("How Long Do People Listen To Music?");
 
-    // // space
-    // const g2 = svg.append("g")
-    //     .attr("width", distrWidth + distrMargin.left + distrMargin.right)
-    //     .attr("height", distrHeight + distrMargin.top + distrMargin.bottom)
-    //     .attr("transform", `translate(${distrLeft}, ${distrTop})`)
-
     //plot 2
 
     const radius = Math.min(width, height) / 2.3 - pieMargin.left;
@@ -137,14 +131,14 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
 
     console.log(d3.entries(mostUsedService))
 
-    const g3 = svg.append("g")
+    const g2 = svg.append("g")
         .attr("width", pieWidth + pieMargin.left + pieMargin.right)
         .attr("height", pieHeight + pieMargin.top + pieMargin.bottom)
         .attr("transform", `translate(${pieMargin.left}, ${pieMargin.top})`)
 
     // pie chart
     // reference: https://d3-graph-gallery.com/graph/pie_annotation.html
-    g3
+    g2
         .selectAll('slices')
         .data(pieData)
         .enter()
@@ -156,7 +150,7 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
         .style("opacity", 0.7)
 
     // labels
-    g3
+    g2
         .selectAll('mySlices')
         .data(pieData)
         .enter()
@@ -170,7 +164,7 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
     // legend
     // reference: https://d3-graph-gallery.com/graph/custom_legend.html
     var size = 15
-    g3.selectAll("mydots")
+    g2.selectAll("mydots")
         .data(keys2)
         .enter()
         .append("rect")
@@ -181,7 +175,7 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
         .style("fill", function (d) { return color(d) })
 
     // Add one dot in the legend for each name.
-    g3.selectAll("mylabels")
+    g2.selectAll("mylabels")
         .data(keys2)
         .enter()
         .append("text")
@@ -193,12 +187,66 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
         .style("alignment-baseline", "middle")
 
     // title
-    g3.append("text")
+    g2.append("text")
         .attr("x", 70 - (pieWidth / 2))
         .attr("y", -70 - (pieMargin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "20px")
         .text("Most Popular Service For 2 Hour Listeners");
+
+
+    // plot 3: parallel plot
+    // https://d3-graph-gallery.com/graph/parallel_basic.html
+
+    dimensions = d3.keys(parallelData[0])
+    console.log(dimensions)
+
+    var y = {}
+    for (i in dimensions) {
+        key = dimensions[i]
+        y[key] = d3.scaleLinear()
+            .domain(d3.extent(parallelData, function (d) { return +d[key]; }))
+            .range([height / 2.5, 0])
+    }
+
+    x = d3.scalePoint()
+        .range([0, width])
+        .padding(1)
+        .domain(dimensions);
+
+    function path(d) {
+        return d3.line()(dimensions.map(function (p) { return [x(p), y[p](d[p])]; }));
+    }
+
+    const g3 = svg.append("g")
+        .attr("width", parallelWidth + parallelMargin.left + parallelMargin.right)
+        .attr("height", parallelHeight + parallelMargin.top + parallelMargin.bottom)
+        .attr("transform", `translate(${parallelLeft}, ${parallelTop})`)
+
+    g3
+        .selectAll("myPath")
+        .data(parallelData)
+        .enter().append("path")
+        .attr("d", path)
+        .style("fill", "none")
+        .style("stroke", "#69b3a2")
+        .style("opacity", 0.5)
+
+    g3.selectAll("myAxis")
+        // For each dimension of the dataset I add a 'g' element:
+        .data(dimensions).enter()
+        .append("g")
+        // I translate this element to its right position on the x axis
+        .attr("transform", function (d) { return "translate(" + x(d) + ")"; })
+        // And I build the axis with the call function
+        .each(function (d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
+        // Add axis title
+        .append("text")
+        .style("text-anchor", "middle")
+        .attr("y", -9)
+        .text(function (d) { return d; })
+        .style("fill", "black")
+
 
 
 }).catch(function (error) {
