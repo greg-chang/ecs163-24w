@@ -27,9 +27,10 @@ const colorMap = new Map([
 // Based on tutorial provided by:
 // https://yangdanny97.github.io/blog/2019/03/01/D3-Spider-Chart
 function createStar(data) {
-    const labels = ["Speed", "Attack", "Sp. Attack", "Defense", "Sp. Def"]
-    const width = 350;
-    const height = 350;
+    const labels = ["Avg. Speed", "Avg. Attack", "Avg. Sp. Attack", "Avg. Defense", "Avg. Sp. Def"]
+    const types = ["Dragon", "Steel", "Rock", "Normal"]
+    const width = 400;
+    const height = 400;
     const maxStat = 150;
     const margin = 50;
 
@@ -66,10 +67,9 @@ function createStar(data) {
         return retData;
     }
     const chartData = [];
-    chartData.push(getTypeData(data, "Dragon"));
-    chartData.push(getTypeData(data, "Steel"));
-    chartData.push(getTypeData(data, "Rock"));
-    chartData.push(getTypeData(data, "Normal"));
+    types.forEach(t => {
+        chartData.push(getTypeData(data, t));
+    });
 
     const svg = d3.select("#plot2")
         .attr("width", width + margin)
@@ -141,6 +141,35 @@ function createStar(data) {
         return coordinates;
     }
 
+    // Title
+    svg.append("text")
+        .attr("transform", 
+            "translate(" + width / 2 + "," + (margin - 25) + ")"
+        )
+        .style("text-anchor", "middle")
+        .style("font", "20px arial")
+        .text("Type Average Base Stat Spread");
+
+    const legendSize = 15
+    svg.selectAll("mydots")
+      .data(types)
+      .enter()
+      .append("rect")
+        .attr("x", width - 50)
+        .attr("y", (d, i) => { return height + i * (legendSize + 5) - 200})
+        .attr("width", legendSize)
+        .attr("height", legendSize)
+        .style("fill", d => { return colorMap.get(d); })
+    svg.selectAll("mylabels")
+      .data(types)
+      .enter()
+      .append("text")
+        .attr("x", width + legendSize * 1.2 - 50)
+        .attr("y", (d, i) => { return height + 3 + i * (legendSize + 5) + (legendSize / 2) - 200})
+        .text( d => { return d + " Type"; })
+        .attr("text-anchor", "left")
+        .style("alignment-baseline", "middle")
+
     svg.selectAll("path")
     .data(chartData)
     .join(
@@ -156,17 +185,13 @@ function createStar(data) {
 }
 
 function createNormSPScatter(data) {
-    const margin = {top: 50, right: 50, bottom: 50, left: 50};
+    const types = ["Dragon", "Steel", "Rock", "Normal"]
+    const margin = {top: 50, right: 100, bottom: 50, left: 75};
     const width = 350;
     const height = 350;
 
     data = data.filter(d => {
-        if (
-            d.type == "Dragon" || 
-            d.type == "Steel" ||
-            d.type == "Rock" || 
-            d.type == "Normal"
-        )
+        if (types.includes(d.type))
             return true;
         else
             return false;
@@ -191,6 +216,56 @@ function createNormSPScatter(data) {
     svg.append("g")
         .call(d3.axisLeft(yAxis));
 
+    // Title
+    svg.append("text")
+        .attr("transform", 
+            "translate(" + width / 2 + "," + (-margin.top + 25) + ")"
+        )
+        .style("text-anchor", "middle")
+        .style("font", "20px arial")
+        .text("Pokemon Attack vs. Defense");
+
+    // X-Label
+    svg.append("text")
+        .attr("transform", 
+            "translate(" + width / 2 + "," + (height + margin.bottom - 5) + ")"
+        )
+        .style("text-anchor", "middle")
+        .style("font", "20px arial")
+        .text("Total Attack (Attack + Sp.Attack)");
+
+    // Y-Label
+    svg.append("text")
+        .attr("transform", 
+            "translate(" + (-margin.left + 30) + "," + width / 2 + ")" +
+            "rotate(-90)"
+        )
+        .style("text-anchor", "middle")
+        .style("font", "20px arial")
+        .text("Total Defense (Defense + Sp.Defense)");
+
+    const legendSize = 15
+    svg.selectAll("mydots")
+      .data(types)
+      .enter()
+      .append("rect")
+        .attr("x", width - 50)
+        .attr("y", (d, i) => { return height + i * (legendSize + 5) - 100})
+        .attr("width", legendSize)
+        .attr("height", legendSize)
+        .style("fill", d => { return colorMap.get(d); })
+        .style("font", "10px arial")
+    svg.selectAll("mylabels")
+      .data(types)
+      .enter()
+      .append("text")
+        .attr("x", width + legendSize * 1.2 - 50)
+        .attr("y", (d, i) => { return height + 3 + i * (legendSize + 5) + (legendSize / 2) - 100})
+        .text( d => { return d + " Type"; })
+        .attr("text-anchor", "left")
+        .style("alignment-baseline", "middle")
+        .style("font", "10px arial")
+
     svg.append('g')
         .selectAll("dot")
         .data(data)
@@ -204,9 +279,9 @@ function createNormSPScatter(data) {
 
 
 function createBarChart(data) {
-    const margin = {top: 50, right: 50, bottom: 50, left: 50};
-    const width = 800;
-    const height = 800;
+    const margin = {top: 75, right: 50, bottom: 75, left: 100};
+    const width = 600;
+    const height = 600;
 
     const svg = d3.select("#plot1")
         .attr("width", width + margin.left + margin.right)
@@ -258,6 +333,34 @@ function createBarChart(data) {
     svg.append("g")
         .call(d3.axisLeft(yAxis));
 
+    // Title
+    svg.append("text")
+        .attr("transform", 
+            "translate(" + width / 2 + "," + (-margin.top + 50) + ")"
+        )
+        .style("text-anchor", "middle")
+        .style("font", "24px arial")
+        .text("Average Base Stats Per Primary Pokemon Type");
+
+    // X-Label
+    svg.append("text")
+        .attr("transform", 
+            "translate(" + width / 2 + "," + (height + margin.bottom - 15) + ")"
+        )
+        .style("text-anchor", "middle")
+        .style("font", "24px arial")
+        .text("Primary Type");
+
+    // Y-Label
+    svg.append("text")
+        .attr("transform", 
+            "translate(" + (-margin.left + 50) + "," + width / 2 + ")" +
+            "rotate(-90)"
+        )
+        .style("text-anchor", "middle")
+        .style("font", "24px arial")
+        .text("Avg. Base Stats");
+
     svg.selectAll("bar")
         .data(typeData)
         .join("rect")
@@ -290,5 +393,4 @@ d3.csv("pokemon.csv").then(rawData =>{
     createNormSPScatter(filteredData);
     createBarChart(filteredData);
     createStar(filteredData);
-    console.log(getTypeData(filteredData, "Rock"));
 });
