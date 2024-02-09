@@ -189,7 +189,7 @@ function createStar(data) {
     );
 }
 
-function createNormSPScatter(data) {
+function createScatter(data) {
     const types = ["Dragon", "Steel", "Rock", "Normal"]
     const margin = {top: 50, right: 150, bottom: 50, left: 75};
     const width = 300;
@@ -326,7 +326,7 @@ function createBarChart(data) {
         )
         .style("text-anchor", "middle")
         .style("font", "24px arial")
-        .text("Avg. Base Stats");
+        .text("Total Avg. Base Stats");
 
     svg.selectAll("bar")
         .data(typeData)
@@ -358,7 +358,7 @@ d3.csv("pokemon.csv").then(rawData =>{
         d.totalDefense = d.defense + d.spDefense 
     });
 
-    createNormSPScatter(filteredData);
     createBarChart(filteredData);
+    createScatter(filteredData);
     createStar(filteredData);
 });
