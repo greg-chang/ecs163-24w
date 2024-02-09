@@ -25,20 +25,47 @@ const colorMap = new Map([
 ]);
 
 // Based on tutorial provided by:
+// https://d3-graph-gallery.com/graph/custom_legend.html
+function createTypeLegend(svg, types, width, height, xOffset, yOffset) {
+    const legendSize = 15
+    svg.selectAll("mydots")
+      .data(types)
+      .enter()
+      .append("rect")
+        .attr("x", width - xOffset)
+        .attr("y", (d, i) => { return height + i * (legendSize + 5) - yOffset})
+        .attr("width", legendSize)
+        .attr("height", legendSize)
+        .style("fill", d => { return colorMap.get(d); })
+        .style("font", "10px arial")
+    svg.selectAll("mylabels")
+      .data(types)
+      .enter()
+      .append("text")
+        .attr("x", width + legendSize * 1.2 - xOffset)
+        .attr("y", (d, i) => { return height + 3 + i * (legendSize + 5) + (legendSize / 2) - yOffset})
+        .text( d => { return d + " Type"; })
+        .attr("text-anchor", "left")
+        .style("alignment-baseline", "middle")
+        .style("font", "10px arial")
+}
+
+// Based on tutorial provided by:
 // https://yangdanny97.github.io/blog/2019/03/01/D3-Spider-Chart
 function createStar(data) {
-    const labels = ["Avg. Speed", "Avg. Attack", "Avg. Sp. Attack", "Avg. Defense", "Avg. Sp. Def"]
+    const labels = ["Avg. Speed", "Avg. Attack", "Avg. Sp. Attack", "Avg. Defense", "Avg. Sp. Def", "Avg. HP"]
     const types = ["Dragon", "Steel", "Rock", "Normal"]
-    const width = 400;
-    const height = 400;
+    const width = 275;
+    const height = 275;
     const maxStat = 150;
-    const margin = 50;
+    const margin = 25;
 
     function getTypeData(data, type) {
         const retData = {
             type: type,
             color: colorMap.get(type),
             speed: 0,
+            hp: 0,
             attack: 0,
             spAttack: 0,
             defense: 0,
@@ -51,6 +78,7 @@ function createStar(data) {
                 return;
 
             retData.speed += d.speed;
+            retData.hp += d.hp;
             retData.attack += d.attack;
             retData.spAttack += d.spAttack;
             retData.defense += d.defense;
@@ -59,6 +87,7 @@ function createStar(data) {
         });
 
         retData.speed /= count;
+        retData.hp /= count;
         retData.attack /= count;
         retData.spAttack /= count;
         retData.defense /= count;
@@ -72,7 +101,7 @@ function createStar(data) {
     });
 
     const svg = d3.select("#plot2")
-        .attr("width", width + margin)
+        .attr("width", width + margin + 100)
         .attr("height", height + margin)
         .style("font", "10px arial")
 
@@ -138,37 +167,13 @@ function createStar(data) {
         angle = (Math.PI / 2) + (2 * Math.PI * 4 / labels.length);
         coordinates.push(getCoords(angle, typeData.spDefense));
 
+        angle = (Math.PI / 2) + (2 * Math.PI * 5 / labels.length);
+        coordinates.push(getCoords(angle, typeData.hp));
+
         return coordinates;
     }
 
-    // Title
-    svg.append("text")
-        .attr("transform", 
-            "translate(" + width / 2 + "," + (margin - 25) + ")"
-        )
-        .style("text-anchor", "middle")
-        .style("font", "20px arial")
-        .text("Type Average Base Stat Spread");
-
-    const legendSize = 15
-    svg.selectAll("mydots")
-      .data(types)
-      .enter()
-      .append("rect")
-        .attr("x", width - 50)
-        .attr("y", (d, i) => { return height + i * (legendSize + 5) - 200})
-        .attr("width", legendSize)
-        .attr("height", legendSize)
-        .style("fill", d => { return colorMap.get(d); })
-    svg.selectAll("mylabels")
-      .data(types)
-      .enter()
-      .append("text")
-        .attr("x", width + legendSize * 1.2 - 50)
-        .attr("y", (d, i) => { return height + 3 + i * (legendSize + 5) + (legendSize / 2) - 200})
-        .text( d => { return d + " Type"; })
-        .attr("text-anchor", "left")
-        .style("alignment-baseline", "middle")
+    createTypeLegend(svg, types, width, height, -120, 75);
 
     svg.selectAll("path")
     .data(chartData)
@@ -186,9 +191,9 @@ function createStar(data) {
 
 function createNormSPScatter(data) {
     const types = ["Dragon", "Steel", "Rock", "Normal"]
-    const margin = {top: 50, right: 100, bottom: 50, left: 75};
-    const width = 350;
-    const height = 350;
+    const margin = {top: 50, right: 150, bottom: 50, left: 75};
+    const width = 275;
+    const height = 275;
 
     data = data.filter(d => {
         if (types.includes(d.type))
@@ -216,22 +221,13 @@ function createNormSPScatter(data) {
     svg.append("g")
         .call(d3.axisLeft(yAxis));
 
-    // Title
-    svg.append("text")
-        .attr("transform", 
-            "translate(" + width / 2 + "," + (-margin.top + 25) + ")"
-        )
-        .style("text-anchor", "middle")
-        .style("font", "20px arial")
-        .text("Pokemon Attack vs. Defense");
-
     // X-Label
     svg.append("text")
         .attr("transform", 
             "translate(" + width / 2 + "," + (height + margin.bottom - 5) + ")"
         )
         .style("text-anchor", "middle")
-        .style("font", "20px arial")
+        .style("font", "16px arial")
         .text("Total Attack (Attack + Sp.Attack)");
 
     // Y-Label
@@ -241,30 +237,10 @@ function createNormSPScatter(data) {
             "rotate(-90)"
         )
         .style("text-anchor", "middle")
-        .style("font", "20px arial")
+        .style("font", "16px arial")
         .text("Total Defense (Defense + Sp.Defense)");
 
-    const legendSize = 15
-    svg.selectAll("mydots")
-      .data(types)
-      .enter()
-      .append("rect")
-        .attr("x", width - 50)
-        .attr("y", (d, i) => { return height + i * (legendSize + 5) - 100})
-        .attr("width", legendSize)
-        .attr("height", legendSize)
-        .style("fill", d => { return colorMap.get(d); })
-        .style("font", "10px arial")
-    svg.selectAll("mylabels")
-      .data(types)
-      .enter()
-      .append("text")
-        .attr("x", width + legendSize * 1.2 - 50)
-        .attr("y", (d, i) => { return height + 3 + i * (legendSize + 5) + (legendSize / 2) - 100})
-        .text( d => { return d + " Type"; })
-        .attr("text-anchor", "left")
-        .style("alignment-baseline", "middle")
-        .style("font", "10px arial")
+    createTypeLegend(svg, types, width, height, -50, 50);
 
     svg.append('g')
         .selectAll("dot")
@@ -280,8 +256,8 @@ function createNormSPScatter(data) {
 
 function createBarChart(data) {
     const margin = {top: 75, right: 50, bottom: 75, left: 100};
-    const width = 600;
-    const height = 600;
+    const width = 550;
+    const height = 550;
 
     const svg = d3.select("#plot1")
         .attr("width", width + margin.left + margin.right)
@@ -333,15 +309,6 @@ function createBarChart(data) {
     svg.append("g")
         .call(d3.axisLeft(yAxis));
 
-    // Title
-    svg.append("text")
-        .attr("transform", 
-            "translate(" + width / 2 + "," + (-margin.top + 50) + ")"
-        )
-        .style("text-anchor", "middle")
-        .style("font", "24px arial")
-        .text("Average Base Stats Per Primary Pokemon Type");
-
     // X-Label
     svg.append("text")
         .attr("transform", 
@@ -380,12 +347,13 @@ d3.csv("pokemon.csv").then(rawData =>{
             defense: Number(d.Defense),
             spDefense: Number(d.Sp_Def),
             speed: Number(d.Speed),
+            hp: Number(d.HP),
             type: d.Type_1
         };
     });
 
     filteredData.forEach(d=>{
-        d.totalStats = d.attack + d.spAttack + d.defense + d.spDefense + d.speed
+        d.totalStats = d.attack + d.spAttack + d.defense + d.spDefense + d.speed + d.hp
         d.totalAttack = d.attack + d.spAttack
         d.totalDefense = d.defense + d.spDefense 
     });
