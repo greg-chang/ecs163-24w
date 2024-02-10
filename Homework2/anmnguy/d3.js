@@ -3,34 +3,22 @@
 d3.csv("studentMentalHealth.csv").then(rawData => {
     console.log(rawData);
 
-    // rawData.forEach(d => {
-    //     d["Do you have Depression?"] = d["Do you have Depression?"] === "Yes" ? 1 : 0;
-    //     d["Do you have Anxiety?"] = d["Do you have Anxiety?"] === "Yes" ? 1 : 0;
-    //     d["Do you have Panic attack?"] = d["Do you have Panic attack?"] === "Yes" ? 1 : 0;
-    // });
-    let aggregatedData = d3.rollup(rawData, 
-        v => ({
-          Depression: d3.sum(v, d => d["Do you have Depression?"]),
-          Anxiety: d3.sum(v, d => d["Do you have Anxiety?"]),
-          PanicAttack: d3.sum(v, d => d["Do you have Panic attack?"])
-        }), 
-        d => d["Your current year of Study"]);
+    rawData.forEach(function(d) {
+        d["Do you have Depression?"] = d["Do you have Depression?"].toLowerCase() === "yes" ? 1 : 0;
+    });
 
-    let dataArray = Array.from(aggregatedData, ([key, value]) => ({
-            category: key,
-            Depression: value.Depression,
-            Anxiety: value.Anxiety,
-            PanicAttack: value.PanicAttack
-    }));
-        
-    let stack = d3.stack().keys(["Depression", "Anxiety", "PanicAttack"]);
+    // Aggregate and prepare data for the bar chart
+    var barChartData = d3.rollups(rawData,
+        function(v) { return d3.sum(v, function(d) { return d["Do you have Depression?"]; }); },
+        function(d) { return d["Your current year of Study"]; }
+    ).map(function(d) { return { year: d[0], depression: d[1] }; });
 
-    let stackedData = stack(dataArray);
+    // Sort years properly
+    barChartData.sort(function(a, b) {
+        return d3.ascending(parseInt(a.year.match(/\d+/)), parseInt(b.year.match(/\d+/)));
+    });
 
-    // Assuming margins are defined, update these as necessary
     const genderCounts = d3.rollup(rawData, v => v.length, d => d["Choose your gender"]);
-
-   // const yearCount = d3.rollup(rawData, v => v.length, d => d["Your current year of Study"]);
 
     const svg = d3.select("svg")
     // Select the existing SVG and append a 'g' element for the pie chart
@@ -60,7 +48,7 @@ d3.csv("studentMentalHealth.csv").then(rawData => {
     // Add title
     g1.append("text")
        .attr("x", 0) 
-       .attr("y", -150) // Adjust based on your SVG's layout
+       .attr("y", -140) // Adjust based on your SVG's layout
        .attr("text-anchor", "middle")
        .style("font-size", "18px")
        .text("Gender Distribution");
@@ -85,50 +73,71 @@ d3.csv("studentMentalHealth.csv").then(rawData => {
        .style("text-anchor", "start")
        .text(d => d);
 
-    //plot 2
-    let margin = {top: 10, right: 30, bottom: 30, left: 60},
-    width = 900 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+    //plot 2 - Bar chart dimensions
+    // Set up the dimensions and margins for the bar chart
+    const margin = {top: 10, right: 30, bottom: 40, left: 600},
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
 
-    // Scale for the x-axis
-    const x = d3.scaleBand()
-    .domain(dataArray.map(d => d.category))
-    .rangeRound([0, width])
-    .padding(0.1);
+    // Append the svg object to the body of the page
+    const g2 = svg.append("g")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
 
-    // Scale for the y-axis
-    const y = d3.scaleLinear()
-    .domain([0, d3.max(dataArray, d => d.Depression + d.Anxiety + d.PanicAttack)])
-    .range([height, 0]);
+    // X axis
+    var x = d3.scaleBand()
+      .range([ 0, width ])
+      .domain(barChartData.map(function(d) { return d.year; }))
+      .padding(0.2);
 
-    // Color scale
-    const color = d3.scaleOrdinal()
-    .domain(["Depression", "Anxiety", "PanicAttack"])
-    .range(["#6f8ab1", "#f0ab8d", "#a3a3a3"]);
+    g2.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end");
 
-    // Append groups and draw the bars
-    const bars = svg.selectAll(".category")
-    .data(stackedData)
-    .enter().append("g")
-    .attr("class", "category")
-    .attr("fill", d => color(d.key))
-    .selectAll("rect")
-    .data(d => d)
-    .enter().append("rect")
-    .attr("x", d => x(d.data.category))
-    .attr("y", d => y(d[1]))
-    .attr("height", d => y(d[0]) - y(d[1]))
-    .attr("width", x.bandwidth());
+    // Add Y axis
+    var y = d3.scaleLinear()
+      .domain([0, d3.max(barChartData, function(d) { return d.depression; })])
+      .range([ height, 0]);
 
-    // Add the x-axis
-    svg.append("g")
-    .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x));
+    g2.append("g")
+      .call(d3.axisLeft(y));
 
-    // Add the y-axis
-    svg.append("g")
-    .call(d3.axisLeft(y));
+    // Bars
+    g2.selectAll("mybar")
+      .data(barChartData)
+      .enter()
+      .append("rect")
+        .attr("x", function(d) { return x(d.year); })
+        .attr("y", function(d) { return y(d.depression); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return height - y(d.depression); })
+        .attr("fill", "#69b3a2")
 
+    // Title
+    g2.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 20)
+        .attr("text-anchor", "middle")  
+        .style("font-size", "18px") 
+        .text("Depression Levels by Year");
+
+    legend2.append("rect")
+      .attr("x", width - 18)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", "#69b3a2");
+
+    legend2.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d; });
 
 }).catch(function(error){
     console.log(error);
