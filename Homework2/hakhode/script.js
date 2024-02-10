@@ -1,7 +1,6 @@
 const width = window.innerWidth;
 const height = window.innerHeight;
 
-// Define dimensions and margins for each plot
 let scatterMargin = {top: 50, right: 30, bottom: 30, left: 60},
     scatterWidth = 400 - scatterMargin.left - scatterMargin.right,
     scatterHeight = 300 - scatterMargin.top - scatterMargin.bottom;
@@ -18,20 +17,14 @@ let plotMargin = {top: 10, right: 30, bottom: 30, left: 60},
     plotWidth = width - plotMargin.left - plotMargin.right,
     plotHeight = height - plotMargin.top - plotMargin.bottom;
 
-// Define initial positions for each plot
 let scatterLeft = 0, scatterTop = 0;
 let distrLeft = 0, distrTop = scatterTop + scatterHeight + scatterMargin.top + scatterMargin.bottom;
 let teamLeft = 0, teamTop = distrTop + distrHeight + distrMargin.top + distrMargin.bottom;
 
-// Calculate the position for the bar plot and adjust the position for the parallel plot
 let plotLeft = 50;
-let plotTop = teamTop + teamHeight + teamMargin.bottom + 50; // Start right after the bar plot
+let plotTop = teamTop + teamHeight + teamMargin.bottom + 50;
 
-// Reduce plotHeight to fit within the available space
 plotHeight = height - plotTop - plotMargin.bottom;
-
-
-// Rest of your code...
 
 d3.csv("data/pokemon.csv").then(rawData => {
     console.log("rawData", rawData);
@@ -122,9 +115,7 @@ d3.csv("data/pokemon.csv").then(rawData => {
         .attr("height", distrHeight + distrMargin.top + distrMargin.bottom)
         .attr("transform", `translate(${distrLeft}, ${distrTop})`)
 
-    // Plot 2: Distribution plot
-    
-
+    // Plot 2: Bar Graph
     q = rawData.reduce((s, { Type_1 }) => (s[Type_1] = (s[Type_1] || 0) + 1, s), {});
     r = Object.keys(q).map((key) => ({ Type_1: key, count: q[key] }));
     console.log(r);
@@ -249,7 +240,6 @@ d3.csv("data/pokemon.csv").then(rawData => {
             .text(attr);
     });
 
-    // Add labels to all axes
     attributes.forEach((attr, i) => {
         const axisLabel = g5.append("text")
             .attr("transform", `translate(${x3(attr)}, ${plotHeight + 20})`)
