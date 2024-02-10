@@ -49,7 +49,7 @@ d3.csv("ds_salaries.csv").then(rawData =>{
                 .attr("width", scatterWidth + scatterMargin.left + scatterMargin.right)
                 .attr("height", scatterHeight + scatterMargin.top + scatterMargin.bottom)
                 .attr("transform", `translate(${scatterMargin.left}, ${scatterMargin.top})`)
-                .attr("style", "outline: thin solid red;")   // Test Border
+                //.attr("style", "outline: thin solid red;")   // Test Border
 
 
     // Chart Title
@@ -121,7 +121,7 @@ const g2 = svg.append("g")
                 .attr("width", parallelWidth + parallelMargin.left + parallelMargin.right)
                 .attr("height", parallelHeight + parallelMargin.top + parallelMargin.bottom)
                 .attr("transform",`translate(${parallelLeft},${parallelMargin.top})`)
-                .attr("style", "outline: thin solid red;")  // Test Border
+                //.attr("style", "outline: thin solid red;")  // Test Border
 
 
 dimensions = Object.keys(parRawData[0])
@@ -131,7 +131,7 @@ dimensions = Object.keys(parRawData[0])
 console.log(dimensions);
 
 let keys1 = {}
-let counter1 = 4
+let counter1 = 5
 parRawData.forEach(item => {
     const levels = item.experience_level;
     let key = 0;
@@ -183,10 +183,26 @@ function path(d) {
 // Chart Title
 g2.append("text")
 .attr("x", parallelWidth / 2)
-.attr("y", -25)
-.attr("font-size", "28px")
+.attr("y", -40)
+.attr("font-size", "20px")
 .attr("text-anchor", "middle")
 .text("Job Specs Comparison - Parallel Plot")
+
+// Size Key
+g2.append("text")
+.attr("x", parallelWidth - 300)
+.attr("y", -20)
+.attr("font-size", "12px")
+.attr("text-anchor", "middle")
+.text("Size- 3: Medium 2: Small 1: Large")
+
+// Experience Key
+g2.append("text")
+.attr("x", 300)
+.attr("y", -20)
+.attr("font-size", "12px")
+.attr("text-anchor", "middle")
+.text("Experience- 4: SE 3: MI 2: EN 1: EX")
 
 // Draw the lines
 g2.selectAll("myPath")
@@ -217,15 +233,13 @@ g2.selectAll("myAxis")
                 .attr("height", barHeight + barMargin.top + barMargin.bottom)
                 .attr("transform", `translate(${barMargin.left}, ${barTop})`)
                 .attr("border", 1)
-                .attr("style", "outline: thin solid red;")   // Test Border
-
-    
+                //.attr("style", "outline: thin solid red;")   // Test Border
     
     // Chart Title
     g3.append("text")
         .attr("x", barWidth / 2)
         .attr("y", -10)
-        .attr("font-size", "32px")
+        .attr("font-size", "28px")
         .attr("text-anchor", "middle")
         .text("Employees Per Job - Bar Graph")
     
