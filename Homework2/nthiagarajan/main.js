@@ -1,3 +1,8 @@
+//By: @Nilesh Thiagarajan
+// EVERYTHING HERE IS FORMATTED AND TAKES HEAVILY FROM THE TEMPLATE WE WERE GIVEN
+
+//Setting up variables for height, width, margins for rest of project
+
 let abFilter = 25
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -17,7 +22,8 @@ let teamMargin = {top: 10, right: 30, bottom: 30, left: 60},
     teamWidth = width - teamMargin.left - teamMargin.right,
     teamHeight = height - 500 - teamMargin.top - teamMargin.bottom;
 
-//Filter  by 2 columns
+//Filter  by 2 columns -- this is a modified version of the groupBy I used in project 1
+//It takes inspiration from the example Observable notebook we were provided for project 1
 function groupBy(objectArray, property, property2) {
     return objectArray.reduce(function (acc, obj) {
       let key = obj[property]
@@ -54,6 +60,8 @@ d3.csv("data/pokemon.csv").then(rawData =>{
     
     temp5 = groupBy(rawData,"Type_1","Type_2");
     console.log(temp5);
+
+    //Extracting average total stats by type for our bar graph 
     const typestotal = () => {
         let type = groupBy(rawData, "Type_1","Type_2");
         let result = [];
@@ -75,6 +83,7 @@ d3.csv("data/pokemon.csv").then(rawData =>{
         return result;
         
       }
+    //Extracting only the flying types, and then isolating their name, weight, and speed
       const flying = () => {
         let result = [];
         temp5["Flying"].forEach(curr => {
@@ -101,7 +110,7 @@ d3.csv("data/pokemon.csv").then(rawData =>{
       
 
     
-//plot 1
+//plot 1 -- Scatter Plot (Uses a bunch of code from template)
     const colours = {
     Normal: '#A8A77A',
     Fire: '#EE8130',
@@ -203,7 +212,9 @@ d3.csv("data/pokemon.csv").then(rawData =>{
          .attr("r", 2)
          .attr("fill", colours["Flying"])
 
-//plot 3
+//plot 3 -- Parallel Plot -- Takes heavy inspiration from D3.js graph gallery website which is a work by Yan Holtz
+//https://d3-graph-gallery.com/parallel
+
     const g2 = svg.append("g")
                 .attr("width", distrWidth + distrMargin.left + distrMargin.right)
                 .attr("height", distrHeight + distrMargin.top + distrMargin.bottom)
@@ -221,13 +232,13 @@ d3.csv("data/pokemon.csv").then(rawData =>{
         .attr("fill", function(d) { return d === "Dragon" ? colours["Dragon"] : "black"; });
 
 
-    // Extract the list of dimensions we want to keep in the plot. Here I keep all except the column called Species
+    // Extract the dimensions we want
   const dragdata = temp5["Dragon"]
   dimensions = Object.keys(dragdata[0]).filter(function(d) { return d == "HP" || d == "Sp_Atk" || d == "Sp_Def"})
   console.log(dimensions)
   console.log(dragdata)
 
-  // For each dimension, I build a linear scale. I store all in a y object
+  // Build Y scales
   const y = {}
   for (i in dimensions) {
     let name = dimensions[i]
@@ -236,13 +247,13 @@ d3.csv("data/pokemon.csv").then(rawData =>{
       .range([distrHeight, 0])
   }
 
-  // Build the X scale -> it find the best position for each Y axis
+  // Build the X scale 
   x = d3.scalePoint()
     .range([0, distrWidth])
     .padding(1)
     .domain(dimensions);
 
-  // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
+  // The path function takes a row of the csv as input, and return x and y coordinates
   function path(d) {
       return d3.line()(dimensions.map(function(p) { return [x(p), y[p](d[p])]; }));
   }
@@ -278,7 +289,7 @@ d3.csv("data/pokemon.csv").then(rawData =>{
             
 
 
-//plot 2
+//plot 2 Bar Graph -- Inspired by the template code
     
     
 
