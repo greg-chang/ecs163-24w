@@ -85,15 +85,15 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     [allTypeOne, rawData] = processingData(rawData);
 
     // Select svg
-    const svg = d3.select("svg")
+    const svg = d3.select("svg");
 
     const g1 = svg.append("g")
                 .attr("width", parallelWidth + parallelMargin.left + parallelMargin.right)
                 .attr("height", parallelHeight + parallelMargin.top + parallelMargin.bottom)
-                .attr("transform", `translate(${parallelMargin.left}, ${height - (parallelHeight + parallelMargin.top + parallelMargin.bottom)})`)
+                .attr("transform", `translate(${parallelMargin.left}, ${height - (parallelHeight + parallelMargin.top + parallelMargin.bottom)})`);
 
     // For plot 1, we only care about these attributes
-    let dimensions = ["Total", "HP", "Attack", "Defense", "Sp_Atk", "Sp_Def", "Speed"];
+    let dimensions = ["HP", "Attack", "Defense", "Sp_Atk", "Sp_Def", "Speed"];
 
     const color = d3.scaleOrdinal()
         .range(colors);
@@ -141,22 +141,23 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .append("text")
           .style("text-anchor", "middle")
           .attr("y", -9)
+          .style("font-size", "12px")
           .text(function(d) { return d; })
-          .style("fill", "black")
+          .style("fill", "black");
 
     // Add a title to g1
     g1.append("text")
         .attr("x", parallelWidth / 2)
-        .attr("y", -20)
+        .attr("y", -30)
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .style("font-weight", "bold")
-        .text("All Pokemon's Attributes Parallel Coordinates Graph");
+        .text("All Pokemon's Base Battle Stats Parallel Coordinates Plot");
 
     // Add a legend to the side of the parallel coordinates plot
     const legend = svg.append("g")
         .attr("class", "legend")
-        .attr("transform", `translate(${width - 150}, ${height - (parallelHeight + parallelMargin.top + parallelMargin.bottom)})`);
+        .attr("transform", `translate(${width - 200}, ${height - (parallelHeight + parallelMargin.top + parallelMargin.bottom)})`);
 
     const legendRectSize = 18;
     const legendSpacing = 4;
@@ -208,7 +209,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     const g2 = svg.append("g")
                 .attr("width", pieWidth + pieMargin.left + pieMargin.right)
                 .attr("height", pieHeight + pieMargin.top + pieMargin.bottom)
-                .attr("transform", `translate(${pieMargin.left + radius + pieLeft}, ${pieMargin.top + radius})`);
+                .attr("transform", `translate(${pieMargin.left + radius + pieLeft + 100}, ${pieMargin.top + radius})`);
 
     // set the color scale
     const color = d3.scaleOrdinal()
@@ -239,7 +240,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     // Add a legend to the side of the parallel coordinates plot
     const legend = svg.append("g")
         .attr("class", "legend")
-        .attr("transform", `translate(${pieMargin.left + 100}, ${pieMargin.top})`);
+        .attr("transform", `translate(${pieMargin.left + 200}, ${pieMargin.top})`);
 
     const legendRectSize = 12;
     const legendSpacing = 4;
@@ -270,12 +271,12 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
 
     // Add title
     svg.append("text")
-        .attr("x", ((legendLeftPosition + pieRightPosition) / 2) + 50)
+        .attr("x", ((legendLeftPosition + pieRightPosition) / 2) + 150)
         .attr("y", pieMargin.top * 2 / 3)
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .style("font-weight", "bold")
-        .text("Each Type of Pokemon's Composition in the Whole Dataset");
+        .text("The Number of Each Type of Pokemon's Composition");
 
 }).catch(function(error){
     console.log(error);
@@ -302,7 +303,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
 
     // Add X axis
     const x = d3.scaleLinear()
-        .domain([0, d3.max(processedData, function(d) { return d.Attack; })])
+        .domain([0, d3.max(processedData, function(d) { return d.Weight_kg; })])
         .range([ 0, scatterWidth ])
 
     g3.append("g")
@@ -311,14 +312,15 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         // Add axis title
         .append("text")
           .style("text-anchor", "middle")
-          .attr("transform", `translate(${scatterWidth + 10}, ${0})`)
-          .attr("y", -9)
-          .text("Attack")
+          .attr("transform", `translate(${scatterWidth + 40}, ${0})`)
+          .attr("y", -10)
+          .style("font-size", "12px")
+          .text("Weight in Kg")
           .style("fill", "black");
 
     // Add Y axis
     const y = d3.scaleLinear()
-        .domain([0, d3.max(processedData, function(d) { return d.Defense; })])
+        .domain([d3.min(processedData, function(d) { return d.Total; }) - 50, d3.max(processedData, function(d) { return d.Total; })])
         .range([ scatterHeight, 0]);
 
     g3.append("g")
@@ -328,7 +330,8 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
           .style("text-anchor", "middle")
           .attr("transform", `translate(${0}, ${0})`)
           .attr("y", -9)
-          .text("Defense")
+          .style("font-size", "12px")
+          .text("Total")
           .style("fill", "black");
 
     // Add dots
@@ -336,19 +339,37 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     .selectAll("dot")
     .data(processedData)
     .join("circle")
-        .attr("cx", function (d) { return x(d.Attack); } )
-        .attr("cy", function (d) { return y(d.Defense); } )
+        .attr("cx", function (d) { return x(d.Weight_kg); } )
+        .attr("cy", function (d) { return y(d.Total); } )
         .attr("r", 1.5)
         .style("fill", "#6890F0");
 
     // Add a title to g3
     g3.append("text")
         .attr("x", scatterWidth / 2)
-        .attr("y", -20)
+        .attr("y", -30)
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .style("font-weight", "bold")
-        .text("Water Pokemon's Attack vs Defense");
+        .text("Water Type Pokemon's Total Base Battle Stats vs Weight");
+
+    // Add legend for Water type Pokemon
+    const legend = svg.append("g")
+    .attr("class", "legend")
+    .attr("transform", "translate(" + (scatterMargin.left + scatterLeft + scatterWidth + 70) + "," + (60) + ")");
+
+    // Add colored circle for Water type Pokemon
+    legend.append("circle")
+    .attr("cx", 0)
+    .attr("cy", 0)
+    .attr("r", 5)
+    .style("fill", "#6890F0");
+
+    // Add text label for Water type Pokemon
+    legend.append("text")
+    .attr("x", 10)
+    .attr("y", 5)
+    .text("Water Type Pokemon");
 
 }).catch(function(error){
     console.log(error);
