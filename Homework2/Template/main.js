@@ -173,34 +173,6 @@ d3.csv("players.csv").then(rawData =>{
     .attr("fill", "grey")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }).catch(function(error){
     console.log(error);
 });
