@@ -5,17 +5,18 @@ d3.csv("studentMentalHealth.csv").then(rawData => {
 
     rawData.forEach(function(d) {
         d["Do you have Depression?"] = d["Do you have Depression?"].toLowerCase() === "yes" ? 1 : 0;
+        d["Your current year of Study"] = d["Your current year of Study"].charAt(0).toUpperCase() + d["Your current year of Study"].slice(1).toLowerCase();
     });
 
-    // Aggregate and prepare data for the bar chart
+    // Aggregate the data
     var barChartData = d3.rollups(rawData,
         function(v) { return d3.sum(v, function(d) { return d["Do you have Depression?"]; }); },
         function(d) { return d["Your current year of Study"]; }
     ).map(function(d) { return { year: d[0], depression: d[1] }; });
 
-    // Sort years properly
+    // Sort the data by year
     barChartData.sort(function(a, b) {
-        return d3.ascending(parseInt(a.year.match(/\d+/)), parseInt(b.year.match(/\d+/)));
+        return d3.ascending(a.year, b.year);
     });
 
     const genderCounts = d3.rollup(rawData, v => v.length, d => d["Choose your gender"]);
@@ -75,69 +76,66 @@ d3.csv("studentMentalHealth.csv").then(rawData => {
 
     //plot 2 - Bar chart dimensions
     // Set up the dimensions and margins for the bar chart
-    const margin = {top: 10, right: 30, bottom: 40, left: 600},
-        width = 960 - margin.left - margin.right,
-        height = 500 - margin.top - margin.bottom;
+    // Set the dimensions and margins of the graph
+    const margin = {top: 20, right: 20, bottom: 60, left: 550},
+          width = 960 - margin.left - margin.right,
+          height = 500 - margin.top - margin.bottom;
 
-    // Append the svg object to the body of the page
+    // Append a 'g' element for the bar chart
+
     const g2 = svg.append("g")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    // X axis
-    var x = d3.scaleBand()
-      .range([ 0, width ])
-      .domain(barChartData.map(function(d) { return d.year; }))
-      .padding(0.2);
+    // Set up the x scale
+    const x = d3.scaleBand()
+              .rangeRound([0, width])
+              .padding(0.1)
+              .domain(barChartData.map(function(d) { return d.year; }));
 
+    // Set up the y scale
+    const y = d3.scaleLinear()
+              .domain([0, d3.max(barChartData, function(d) { return d.depression; })])
+              .range([height, 0]);
+
+    // Add the X Axis
     g2.append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x))
-      .selectAll("text")
-        .attr("transform", "translate(-10,0)rotate(-45)")
-        .style("text-anchor", "end");
+      .call(d3.axisBottom(x));
 
-    // Add Y axis
-    var y = d3.scaleLinear()
-      .domain([0, d3.max(barChartData, function(d) { return d.depression; })])
-      .range([ height, 0]);
-
+    // Add the Y Axis
     g2.append("g")
       .call(d3.axisLeft(y));
 
-    // Bars
-    g2.selectAll("mybar")
+    // Add the bars
+    g2.selectAll(".bar")
       .data(barChartData)
-      .enter()
-      .append("rect")
-        .attr("x", function(d) { return x(d.year); })
-        .attr("y", function(d) { return y(d.depression); })
-        .attr("width", x.bandwidth())
-        .attr("height", function(d) { return height - y(d.depression); })
-        .attr("fill", "#69b3a2")
+      .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.year); })
+      .attr("width", x.bandwidth())
+      .attr("y", function(d) { return y(d.depression); })
+      .attr("height", function(d) { return height - y(d.depression); })
+      .attr("fill", "#69b3a2");
 
-    // Title
+    // Add a title to the bar chart
     g2.append("text")
-        .attr("x", (width / 2))             
-        .attr("y", 20)
-        .attr("text-anchor", "middle")  
-        .style("font-size", "18px") 
-        .text("Depression Levels by Year");
+      .attr("x", width / 2)
+      .attr("y", 0)
+      .attr("text-anchor", "middle")
+      .style("font-size", "18px")
+      .text("Depression Counts by Year");
 
-    legend2.append("rect")
-      .attr("x", width - 18)
-      .attr("width", 18)
-      .attr("height", 18)
-      .style("fill", "#69b3a2");
+    g2.append('text')
+      .attr('x', 150)
+      .attr('y', 480)
+      .attr('dy', '0.35em')
+      .text('Year of Study');
 
-    legend2.append("text")
-      .attr("x", width - 24)
-      .attr("y", 9)
-      .attr("dy", ".35em")
-      .style("text-anchor", "end")
-      .text(function(d) { return d; });
+    g2.append('text')
+      .attr('x', -120)
+      .attr('y', 200)
+      .attr('dy', '0.35em')
+      .text('Student Counts');
 
 }).catch(function(error){
     console.log(error);
