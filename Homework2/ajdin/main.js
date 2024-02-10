@@ -71,7 +71,7 @@ d3.csv("student-mat.csv").then(rawData =>{
     .attr("y", scatterHeight + 50)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
-    .text("Workday Alcohol Consumption")
+    .text("Workday Alcohol Consumption (Dalc)")
     
 
     // Y label
@@ -81,7 +81,7 @@ d3.csv("student-mat.csv").then(rawData =>{
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90)")
-    .text("Final Grade")
+    .text("Final Grade (G3)")
 
     // X ticks
     const x1 = d3.scaleLinear()
@@ -193,29 +193,29 @@ d3.csv("student-mat.csv").then(rawData =>{
     .attr("x", (d) => x2(d.age))
     .attr("width", x2.bandwidth)
     .attr("height", d => teamHeight - y2(d.avg))
-    .attr("fill", "grey")
+    .attr("fill", "#268DBA")
 
 // plot 3
     
-    d3.select("svg").attr("height", 3000)
+    d3.select("svg").attr("height", 1800)
     
     let topPlot3 = 900;
 
     const g4 = svg.append("g")
                 .attr("width", teamWidth + teamMargin.left + teamMargin.right)
                 .attr("height", teamHeight + teamMargin.top + teamMargin.bottom + 1000)
-                .attr("transform", `translate(${teamMargin.left - 150}, ${topPlot3})`)
+                .attr("transform", `translate(${teamMargin.left - 60}, ${topPlot3})`)
     
     // title
     g4.append("text")
-    .attr("x", teamWidth / 1.75)
+    .attr("x", teamWidth / 1.85)
     .attr("y", teamMargin.top - 80)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
     .text("Student Alcohol Consumption Parallel Coordinate Graph")
 
     // Extract the list of dimensions we want to keep in the plot. Here I keep all except the column called Species
-    const dimensions = ['age', 'G3', 'Dalc', 'absences', 'age']
+    const dimensions = ['G3', 'Dalc', 'absences', 'age']
     // For each dimension, I build a linear scale. I store all in a y object
     var y = {}
     dimensions.forEach(dim => {
