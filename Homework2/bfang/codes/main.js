@@ -117,33 +117,6 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         return d3.line()(dimensions.map(function(p) { return [x(p), y[p](d[p])]; }));
     }
 
-    // Highlight the type that is hovered
-    const highlight = function(event, d){
-        
-        let selected_type = d.Type_1;
-
-        // first every group turns grey
-        d3.selectAll(".line")
-            .transition().duration(200)
-            .style("stroke", "lightgrey")
-            .style("opacity", "0.2")
-        // Second the hovered type takes its color
-        d3.select(this)
-            .transition().duration(200)
-            .style("stroke", color(selected_type))
-            .style("opacity", "1")
-    }
-
-    // Unhighlight
-    const doNotHighlight = function(event, d){
-        d3.selectAll(".line")
-            .transition().duration(200).delay(1000)
-            .style("stroke", function(d){ return( color(d.Type_1))} )
-            .style("opacity", "1")
-    }
-
-    // Problem detected: The draw line function is not properly coded. For .on(), the data d doesn't pass in as an object. It passed in as an integer, and that is why d.Type_1 is undefine and it always give the same color. Need to do fix that problem in Draw path part.
-
     // Draw paths
     g1.selectAll("myPath")
         .data(rawData)
@@ -152,9 +125,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .attr("d",  path)
         .style("fill", "none" )
         .style("stroke", function(d){ return( color(d.Type_1))} )
-        .style("opacity", 1)
-        .on("mouseover", highlight)
-        .on("mouseleave", doNotHighlight);
+        .style("opacity", 1);
 
     // Set up axis
     g1.selectAll("myAxis")
@@ -368,7 +339,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .attr("cx", function (d) { return x(d.Attack); } )
         .attr("cy", function (d) { return y(d.Defense); } )
         .attr("r", 1.5)
-        .style("fill", "#69b3a2")
+        .style("fill", "#6890F0");
 
     // Add a title to g3
     g3.append("text")
