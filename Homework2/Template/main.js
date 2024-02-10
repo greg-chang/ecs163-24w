@@ -18,6 +18,8 @@ let teamMargin = {top: 10, right: 30, bottom: 30, left: 60},
     teamHeight = height-450 - teamMargin.top - teamMargin.bottom;
 
 
+ // format for players.csv data
+ // nameFirst,nameLast,nameGiven,playerID,yearID,stint,teamID,lgID,G,AB,R,H,2B,3B,HR,RBI,SB,CS,BB,SO,IBB,HBP,SH,SF,GIDP,salary
 d3.csv("players.csv").then(rawData =>{
     console.log("rawData", rawData);
     
@@ -110,10 +112,7 @@ d3.csv("players.csv").then(rawData =>{
 
 //plot 2
     
-    q = rawData.reduce((s, { teamID }) => (s[teamID] = (s[teamID] || 0) + 1, s), {});
-    r = Object.keys(q).map((key) => ({ teamID: key, count: q[key] }));
-    console.log(r);
-
+  tell
            
     const g3 = svg.append("g")
                 .attr("width", teamWidth + teamMargin.left + teamMargin.right)
