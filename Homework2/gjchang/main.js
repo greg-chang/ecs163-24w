@@ -133,6 +133,7 @@ d3.csv("pokemon.csv").then(rawdata => {
         .attr("height", d => bodystyle_Height - y2(d.averageAttack))
         .attr("fill", d => colorScale(d.averageAttack));
 
+
     // Graph 2
     const g2 = svg.append("g")
     .attr("width", scatterWidth + scatterMargin.left + scatterMargin.right)
@@ -208,9 +209,6 @@ d3.csv("pokemon.csv").then(rawdata => {
 
 
     // Graph 3 
-    // var margin = {top: 30, right: 10, bottom: 10, left: 0},
-    // width = 500 - margin.left - margin.right,
-    // height = 400 - margin.top - margin.bottom;
     const g3 = svg.append("g")
     .attr("width", parallelWidth + parallelMargin.left + parallelMargin.right)
     .attr("height", parallelHeight + parallelMargin.top + parallelMargin.bottom)
@@ -270,53 +268,6 @@ d3.csv("pokemon.csv").then(rawdata => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-    // // Create scales for each dimension
-    // const scales = {};
-    // dimensions.forEach(dimension => {
-    // scales[dimension] = d3.scaleLinear()
-    //     .domain(d3.extent(bipedalTailedMap, d => +d[dimension]))
-    //     .range([parallelHeight, 0]);
-    // });
-
-    // // Create lines for each data point
-    // const path = g3.append("g")
-    // .selectAll("path")
-    // .data(bipedalTailedMap)
-    // .join("path")
-    // .attr("d", d => d3.line()(dimensions.map(dimension => [scales[dimension](d[dimension]), scales[dimension].range()[0]])))
-    // .attr("fill", "none")
-    // .attr("stroke", "#69b3a2")
-    // .attr("stroke-width", 2);
-
-    // // Create axes for each dimension
-    // const axis = g3.append("g")
-    // .selectAll("g")
-    // .data(dimensions)
-    // .join("g")
-    // .attr("transform", d => `translate(${scales[d](0)},0)`)
-    // .call(d3.axisLeft().scale(scales));
-
-    // // Add labels to each axis
-    // axis.append("text")
-    // .attr("y", -10)
-    // .attr("x", 0)
-    // .attr("text-anchor", "middle")
-    // .attr("fill", "black")
-    // .text(d => d)
-    // .attr("transform", "rotate(-30)");
-
-
-    
 }).catch(function (error) {
   console.log(error);
 });
