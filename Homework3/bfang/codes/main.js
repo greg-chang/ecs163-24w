@@ -120,26 +120,45 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     // Highlight the one that is hovered
     var highlight = function(d){
 
-    selected_type = d.Type_1;
+        selected_type = d.Type_1;
 
-    // first every group turns grey
-    d3.selectAll(".line")
-        .transition().duration(200)
-        .style("stroke", "lightgrey")
-        .style("opacity", "0.2")
-    // Second the hovered specie takes its color
-    d3.select(this)
-        .transition().duration(200)
-        .style("stroke", color(selected_type))
-        .style("opacity", "1")
+        // first every group turns grey
+        d3.selectAll(".line")
+            .transition().duration(200)
+            .style("stroke", "lightgrey")
+            .style("opacity", "0.2")
+        // Second the hovered specie takes its color
+        d3.select(this)
+            .transition().duration(200)
+            .style("stroke", color(selected_type))
+            .style("opacity", "1")
+
+        d3.selectAll(".legend-item-graph1")
+            .transition().duration(200)
+            .style("opacity", "0.2")
+            .on("end", function() {
+                // Iterate through each legend item
+                d3.selectAll(".legend-item-graph1")
+                .transition().duration(200)
+                .each(function(d, i) {
+                    const legendItem = d3.select(this);
+                    if (legendItem.select("text").text() === selected_type) {
+                        legendItem.style("opacity", "1");
+                    }
+                });
+            });
     }
 
     // Unhighlight
     var doNotHighlight = function(d){
-    d3.selectAll(".line")
-        .transition().duration(200).delay(1000)
-        .style("stroke", function(d){ return( color(d.Type_1))} )
-        .style("opacity", "1")
+        d3.selectAll(".line")
+            .transition().duration(200).delay(1000)
+            .style("stroke", function(d){ return( color(d.Type_1))} )
+            .style("opacity", "1")
+
+        d3.selectAll(".legend-item-graph1")
+            .transition().duration(200).delay(1000)
+            .style("opacity", "1")
     }
 
     // Draw paths
@@ -190,11 +209,11 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     const legendSpacing = 4;
 
     // Create legend items
-    const legendItems = legend.selectAll(".legend-item")
+    const legendItems = legend.selectAll(".legend-item-graph1")
         .data(allTypeOne)
         .enter()
         .append("g")
-        .attr("class", "legend-item")
+        .attr("class", "legend-item-graph1")
         .attr("transform", function (d, i) { return `translate(0, ${i * (legendRectSize + legendSpacing)})`; });
 
     // Append rectangles to the legend items
@@ -273,11 +292,11 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     const legendSpacing = 4;
 
     // Create legend items
-    const legendItems = legend.selectAll(".legend-item")
+    const legendItems = legend.selectAll(".legend-item-graph2")
         .data(allTypeOne)
         .enter()
         .append("g")
-        .attr("class", "legend-item")
+        .attr("class", "legend-item-graph2")
         .attr("transform", function (d, i) { return `translate(0, ${i * (legendRectSize + legendSpacing)})`; });
 
     // Append rectangles to the legend items
