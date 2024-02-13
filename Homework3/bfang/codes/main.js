@@ -338,6 +338,48 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .attr("width", scatterWidth + scatterMargin.left + scatterMargin.right)
         .attr("height", scatterHeight + scatterMargin.top + scatterMargin.bottom)
         .attr("transform", `translate(${scatterMargin.left + scatterLeft}, ${scatterMargin.top + scatterTop})`);
+    
+    // Define brush
+    const brush = d3.brush()
+        .extent([[0, 0], [scatterWidth, scatterHeight]])
+        .on("start", brushed)
+        .on("brush", brushed)
+        .on("end", endbrushed)
+
+    // Attach brush to SVG
+    const brushG = g3.append("g")
+        .attr("class", "brush")
+        .call(brush);
+
+    // Define behavior for brush
+    function brushed() {
+
+        const [[x0, y0], [x1, y1]] = d3.event.selection;
+
+        // Filter data based on brush selection
+        const selectedData = processedData.filter(d =>
+            x0 <= x(d.Weight_kg) && x(d.Weight_kg) <= x1 &&
+            y0 <= y(d.Total) && y(d.Total) <= y1
+        );
+
+        // Update selected dots
+        g3.selectAll("circle")
+            .style("fill", d => selectedData.includes(d) ? "red" : "#6890F0");
+    }
+
+    function endbrushed() {
+        const [[x0, y0], [x1, y1]] = d3.event.selection;
+
+        // Filter data based on brush selection
+        const selectedData = processedData.filter(d =>
+            x0 <= x(d.Weight_kg) && x(d.Weight_kg) <= x1 &&
+            y0 <= y(d.Total) && y(d.Total) <= y1
+        );
+
+        // Update selected dots
+        g3.selectAll("circle")
+            .style("fill", d => selectedData.includes(d) ? "#6890F0" : "#6890F0");
+    }
 
     // Add X axis
     const x = d3.scaleLinear()
