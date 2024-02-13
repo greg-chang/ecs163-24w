@@ -117,6 +117,31 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         return d3.line()(dimensions.map(function(p) { return [x(p), y[p](d[p])]; }));
     }
 
+    // Highlight the one that is hovered
+    var highlight = function(d){
+
+    selected_type = d.Type_1;
+
+    // first every group turns grey
+    d3.selectAll(".line")
+        .transition().duration(200)
+        .style("stroke", "lightgrey")
+        .style("opacity", "0.2")
+    // Second the hovered specie takes its color
+    d3.select(this)
+        .transition().duration(200)
+        .style("stroke", color(selected_type))
+        .style("opacity", "1")
+    }
+
+    // Unhighlight
+    var doNotHighlight = function(d){
+    d3.selectAll(".line")
+        .transition().duration(200).delay(1000)
+        .style("stroke", function(d){ return( color(d.Type_1))} )
+        .style("opacity", "1")
+    }
+
     // Draw paths
     g1.selectAll("myPath")
         .data(rawData)
@@ -125,7 +150,9 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .attr("d",  path)
         .style("fill", "none" )
         .style("stroke", function(d){ return( color(d.Type_1))} )
-        .style("opacity", 1);
+        .style("opacity", 1)
+        .on("mouseover", highlight)
+        .on("mouseleave", doNotHighlight );
 
     // Set up axis
     g1.selectAll("myAxis")
