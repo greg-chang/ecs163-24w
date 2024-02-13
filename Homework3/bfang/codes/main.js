@@ -133,19 +133,11 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
             .style("stroke", color(selected_type))
             .style("opacity", "1")
 
+        // Highlight the respective legend
         d3.selectAll(".legend-item-graph1")
             .transition().duration(200)
-            .style("opacity", "0.2")
-            .on("end", function() {
-                // Iterate through each legend item
-                d3.selectAll(".legend-item-graph1")
-                .transition().duration(200)
-                .each(function(d, i) {
-                    const legendItem = d3.select(this);
-                    if (legendItem.select("text").text() === selected_type) {
-                        legendItem.style("opacity", "1");
-                    }
-                });
+            .style("opacity", function(d) {
+                return (d === selected_type) ? "1" : "0.2";
             });
     }
 
