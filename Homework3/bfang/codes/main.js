@@ -17,7 +17,7 @@ let pieMargin = {top: 60, right: 30, bottom: 30, left: 80},
     pieHeight = 350 - pieMargin.top - pieMargin.bottom;
 
 // Dimensions for the Scatter Plot
-let scatterLeft = 1300, scatterTop = 50;
+let scatterLeft = 1190, scatterTop = 50;
 let scatterMargin = {top: 10, right: 30, bottom: 30, left: 60},
     scatterWidth = 400 - scatterMargin.left - scatterMargin.right,
     scatterHeight = 350 - scatterMargin.top - scatterMargin.bottom;
@@ -343,8 +343,8 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     var default_output = [0, 0];
     var labels = g3.selectAll("text").data(print_name)
         .enter().append('text')
-        .attr("x", 10)
-        .attr("y", (d, i)=> i*20)
+        .attr("x", 380)
+        .attr("y", (d, i)=> i*20 + 60)
         .text((d,i) => `${d}`+': '+`${default_output[i]}`)
 
     // Define brush
@@ -378,6 +378,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
                     output[0] ++;
                     output[2] += d.Total;
                     output[1] = output[2] / output[0];
+                    output[1] = output[1].toFixed(2);
                     selected_data.push(d);
                 }
             });
@@ -388,8 +389,8 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     }
 
     function endbrushed() {
-        labels.data(print_name).attr("x", 10)
-            .attr("y", (d, i)=> i*20)
+        labels.data(print_name).attr("x", 380)
+            .attr("y", (d, i)=> i*20 + 60)
             .text((d,i) => `${d}`+': '+`${output[i]}`)
     }
 
