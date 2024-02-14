@@ -263,19 +263,23 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
                             .innerRadius(0)
                             .outerRadius(radius)
 
-    // Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
-    g2
-        .selectAll('mySlices')
+    // Adding g to each path, so I can select them later
+    g2.selectAll('mySlices')
         .data(data_ready)
-        .join('path')
+        .join('g')
+        .attr("id", function(d, i) { return d.data[0]; })
+        .append('path')
         .attr('d', arcGenerator)
-        .attr('fill', function(d){ return(color(d.data[0])) })
+        .attr('fill', function(d) { return color(d.data[0]); })
         .attr("stroke", "black")
         .style("stroke-width", "2px")
-        .style("opacity", 0)
-        .transition().duration(500)
-        .delay(function(d, i) { return i * 100; })
-        .style("opacity", 0.7);
+
+    // Sort the data and select them to appear one by one
+    data_ready.sort((a, b) => (b.index - a.index));
+
+    for (let i = 0; i < data_ready.length; i ++) {
+        g2.select("#" + data_ready[i].data[0]).style("opacity", 0).transition().duration(1000).delay(i * 100).style("opacity", 0.7);
+    }
 
     // Add a legend to the side of the parallel coordinates plot
     const legend = svg.append("g")
