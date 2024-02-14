@@ -343,10 +343,11 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     const g3 = svg.append("g")
         .attr("width", scatterWidth + scatterMargin.left + scatterMargin.right)
         .attr("height", scatterHeight + scatterMargin.top + scatterMargin.bottom)
-        .attr("transform", `translate(${scatterMargin.left + scatterLeft}, ${scatterMargin.top + scatterTop})`);
+        .attr("transform", `translate(${scatterMargin.left + scatterLeft}, ${scatterMargin.top + scatterTop})`); 
 
     const color = d3.scaleOrdinal()
-        .range(colors);    
+        .domain(allTypeOne)
+        .range(colors);
 
     var print_name = ["Number Selected", "Average Total Base Combat Stats"];
     var default_output = [0, 0];
@@ -390,35 +391,32 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
                     output[1] = output[1].toFixed(2);
                     selected_data.push(d);
                 }
+                return selected;
             });
+
         // Update selected dots
         g3.selectAll("circle")
             .style("fill", d => selected_data.includes(d) ? "red" : "#6890F0");
-        const selected_names = [];
-        for (let i = 0; i < selected_data.length; i ++) {
-            selected_names.push(selected_data[i].Name);
-        }
+        const selected_names = selected_data.map(d => d.Name);
 
-        // first every group turns grey
+        // Link the scatterplot to the parallel plot
         d3.selectAll(".line")
             .transition().duration(200)
-            .style("stroke", "lightgrey")
-            .style("opacity", "0.2")
-            // .style("opacity", function(d) {
-            //     console.log(d);
-            //     if (selected_names.includes(d.Name)) {
-            //         return "1";
-            //     } else {
-            //         return "0.2";
-            //     }
-            // })
-            .style("opacity", d => selected_names.includes(d.id) ? "1" : "0.2")
-            .style("stroke",  d => selected_names.includes(d.id) ? color(d.Type_1) : "lightgrey")
+            .style("stroke", d => selected_names.includes(d.Name) ? color(d.Type_1) : "lightgrey")
+            .style("opacity", d => selected_names.includes(d.Name) ? "1" : "0.2");
 
-
+        // Highlight the Water legend
+        d3.selectAll(".legend-item-graph1")
+            .transition().duration(200)
+            .style("opacity", function(d) {
+                return (d === "Water") ? "1" : "0.2";
+            });
     }
 
     function endbrushed() {
+        const color = d3.scaleOrdinal()
+            .range(colors);
+
         labels.data(print_name).attr("x", 380)
             .attr("y", (d, i)=> i*20 + 60)
             .text((d,i) => `${d}`+': '+`${output[i]}`)
@@ -426,6 +424,10 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         d3.selectAll(".line")
             .transition().duration(200).delay(1000)
             .style("stroke", function(d){ return( color(d.Type_1))} )
+            .style("opacity", "1")
+
+        d3.selectAll(".legend-item-graph1")
+            .transition().duration(200).delay(1000)
             .style("opacity", "1")
     }
 
