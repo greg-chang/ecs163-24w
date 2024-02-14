@@ -339,6 +339,14 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .attr("height", scatterHeight + scatterMargin.top + scatterMargin.bottom)
         .attr("transform", `translate(${scatterMargin.left + scatterLeft}, ${scatterMargin.top + scatterTop})`);
     
+    var print_name = ["Number Selected", "Average Total Base Combat Stats"];
+    var default_output = [0, 0];
+    var labels = g3.selectAll("text").data(print_name)
+        .enter().append('text')
+        .attr("x", 10)
+        .attr("y", (d, i)=> i*20)
+        .text((d,i) => `${d}`+': '+`${default_output[i]}`)
+
     // Define brush
     const brush = d3.brush()
         .extent([[0, 0], [scatterWidth, scatterHeight]])
@@ -346,44 +354,48 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .on("brush", brushed)
         .on("end", endbrushed)
 
-    // Attach brush to SVG
-    const brushG = g3.append("g")
+    g3.append("g")
         .attr("class", "brush")
         .call(brush);
+
+    // Number, Average, Sum
+    var output = [0, 0, 0];
 
     // Define behavior for brush
     function brushed() {
 
+        // Initialize the output array
+        output = [0, 0, 0];
         const [[x0, y0], [x1, y1]] = d3.event.selection;
 
+        var selected_data = []
         // Filter data based on brush selection
-        const selectedData = processedData.filter(d =>
-            x0 <= x(d.Weight_kg) && x(d.Weight_kg) <= x1 &&
-            y0 <= y(d.Total) && y(d.Total) <= y1
-        );
-
+        dots
+            .classed("selected", function(d) {
+                const selected = x0 <= x(d.Weight_kg) && x(d.Weight_kg) <= x1 &&
+                            y0 <= y(d.Total) && y(d.Total) <= y1;
+                if (selected) {
+                    output[0] ++;
+                    output[2] += d.Total;
+                    output[1] = output[2] / output[0];
+                    selected_data.push(d);
+                }
+            });
         // Update selected dots
         g3.selectAll("circle")
-            .style("fill", d => selectedData.includes(d) ? "red" : "#6890F0");
+            .style("fill", d => selected_data.includes(d) ? "red" : "#6890F0");
+
     }
 
     function endbrushed() {
-        const [[x0, y0], [x1, y1]] = d3.event.selection;
-
-        // Filter data based on brush selection
-        const selectedData = processedData.filter(d =>
-            x0 <= x(d.Weight_kg) && x(d.Weight_kg) <= x1 &&
-            y0 <= y(d.Total) && y(d.Total) <= y1
-        );
-
-        // Update selected dots
-        g3.selectAll("circle")
-            .style("fill", d => selectedData.includes(d) ? "#6890F0" : "#6890F0");
+        labels.data(print_name).attr("x", 10)
+            .attr("y", (d, i)=> i*20)
+            .text((d,i) => `${d}`+': '+`${output[i]}`)
     }
 
     // Add X axis
     const x = d3.scaleLinear()
-        .domain([0, d3.max(processedData, function(d) { return d.Weight_kg; })])
+        .domain([0, d3.max(processedData, function(d) { return d.Weight_kg; }) + 50])
         .range([ 0, scatterWidth ])
 
     g3.append("g")
@@ -415,7 +427,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
           .style("fill", "black");
 
     // Add dots
-    g3.append('g')
+    const dots = g3.append('g')
     .selectAll("dot")
     .data(processedData)
     .join("circle")
