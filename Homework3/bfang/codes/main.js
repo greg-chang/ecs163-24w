@@ -256,8 +256,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     // Compute the position of each group on the pie:
     const pie = d3.pie()
     .value(function(d) {return d[1]})
-    const data_ready = pie(Object.entries(processedData))
-    // Now I know that group A goes from 0 degrees to x degrees and so on.
+    const data_ready = pie(Object.entries(processedData));
 
     // shape helper to build arcs:
     const arcGenerator = d3.arc()
@@ -273,7 +272,10 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .attr('fill', function(d){ return(color(d.data[0])) })
         .attr("stroke", "black")
         .style("stroke-width", "2px")
-        .style("opacity", 0.7)
+        .style("opacity", 0)
+        .transition().duration(500)
+        .delay(function(d, i) { return i * 100; })
+        .style("opacity", 0.7);
 
     // Add a legend to the side of the parallel coordinates plot
     const legend = svg.append("g")
