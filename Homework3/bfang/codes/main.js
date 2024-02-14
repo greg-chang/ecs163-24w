@@ -409,7 +409,11 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         d3.selectAll(".legend-item-graph1")
             .transition().duration(200)
             .style("opacity", function(d) {
-                return (d === "Water") ? "1" : "0.2";
+                if (selected_data.length) {
+                    return (d === "Water") ? "1" : "0.2";
+                }
+                // No selected data
+                return "0.2";
             });
     }
 
