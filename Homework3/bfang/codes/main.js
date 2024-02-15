@@ -5,19 +5,19 @@ let pieRadius = 0;
 
 // Dimensions for each individual plot
 // Dimensions for the parallel coordinates plot
-let parallelLeft = 0, parallelTop = 400;
+let parallelLeft = 0, parallelTop = (3/4) * height;
 let parallelMargin = {top: 10, right: 30, bottom: 30, left: 60},
     parallelWidth = width - parallelMargin.left - parallelMargin.right,
     parallelHeight = height - 450 - parallelMargin.top - parallelMargin.bottom;
 
 // Dimensions for the pie chart
-let pieLeft = 200, pieTop = 0;
+let pieLeft = (1/5) * width, pieTop = 0;
 let pieMargin = {top: 60, right: 30, bottom: 30, left: 80},
     pieWidth = 400 - pieMargin.left - pieMargin.right,
     pieHeight = 350 - pieMargin.top - pieMargin.bottom;
 
 // Dimensions for the Scatter Plot
-let scatterLeft = 1190, scatterTop = 50;
+let scatterLeft = (3/5) * width, scatterTop = 50;
 let scatterMargin = {top: 10, right: 30, bottom: 30, left: 60},
     scatterWidth = 400 - scatterMargin.left - scatterMargin.right,
     scatterHeight = 350 - scatterMargin.top - scatterMargin.bottom;
@@ -247,7 +247,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     const g2 = svg.append("g")
                 .attr("width", pieWidth + pieMargin.left + pieMargin.right)
                 .attr("height", pieHeight + pieMargin.top + pieMargin.bottom)
-                .attr("transform", `translate(${pieMargin.left + radius + pieLeft + 100}, ${pieMargin.top + radius})`);
+                .attr("transform", `translate(${pieMargin.left + radius + pieLeft}, ${pieMargin.top + radius})`);
 
     // set the color scale
     const color = d3.scaleOrdinal()
@@ -284,7 +284,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     // Add a legend to the side of the parallel coordinates plot
     const legend = svg.append("g")
         .attr("class", "legend")
-        .attr("transform", `translate(${pieMargin.left + 200}, ${pieMargin.top})`);
+        .attr("transform", `translate(${pieLeft}, ${pieMargin.top})`);
 
     const legendRectSize = 12;
     const legendSpacing = 4;
@@ -315,7 +315,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
 
     // Add title
     svg.append("text")
-        .attr("x", ((legendLeftPosition + pieRightPosition) / 2) + 150)
+        .attr("x", (pieMargin.left + radius + pieLeft))
         .attr("y", pieMargin.top * 2 / 3)
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
@@ -353,7 +353,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     var default_output = [0, 0];
     var labels = g3.selectAll("text").data(print_name)
         .enter().append('text')
-        .attr("x", 380)
+        .attr("x", scatterWidth + 20)
         .attr("y", (d, i)=> i*20 + 60)
         .text((d,i) => `${d}`+': '+`${default_output[i]}`)
 
@@ -421,7 +421,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         const color = d3.scaleOrdinal()
             .range(colors);
 
-        labels.data(print_name).attr("x", 380)
+        labels.data(print_name).attr("x", scatterWidth + 20)
             .attr("y", (d, i)=> i*20 + 60)
             .text((d,i) => `${d}`+': '+`${output[i]}`)
 
@@ -490,7 +490,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     // Add legend for Water type Pokemon
     const legend = svg.append("g")
     .attr("class", "legend")
-    .attr("transform", "translate(" + (scatterMargin.left + scatterLeft + scatterWidth + 70) + "," + (60) + ")");
+    .attr("transform", "translate(" + (scatterMargin.left + scatterLeft + scatterWidth + 20) + "," + (60) + ")");
 
     // Add colored circle for Water type Pokemon
     legend.append("circle")
