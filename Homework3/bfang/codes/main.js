@@ -328,6 +328,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
 
 // Plot 3: Scatter plot for Water Type Pokemon
 d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
+    
     // Data Processing
     allTypeOne = [];
     [allTypeOne, rawData] = processingData(rawData);
@@ -396,8 +397,9 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
 
         // Update selected dots
         g3.selectAll("circle")
-            .style("fill", d => selected_data.includes(d) ? "red" : "#6890F0");
+            .style("fill", d => selected_data.includes(d) ? "red" : color(d.Type_1));
         const selected_names = selected_data.map(d => d.Name);
+        const selected_types = [...new Set(selected_data.map(obj => obj.Type_1))]
 
         // Link the scatterplot to the parallel plot
         d3.selectAll(".line")
@@ -410,7 +412,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
             .transition().duration(200)
             .style("opacity", function(d) {
                 if (selected_data.length) {
-                    return (d === "Water") ? "1" : "0.2";
+                    return (selected_types.includes(d)) ? "1" : "0.2";
                 }
                 // No selected data
                 return "0.2";
@@ -418,6 +420,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     }
 
     function endbrushed() {
+
         const color = d3.scaleOrdinal()
             .range(colors);
 
@@ -441,6 +444,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .range([ 0, scatterWidth ])
 
     g3.append("g")
+        .attr("id", "x-axis")
         .attr("transform", `translate(0, ${scatterHeight})`)
         .call(d3.axisBottom(x))
         // Add axis title
@@ -458,6 +462,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .range([ scatterHeight, 0]);
 
     g3.append("g")
+        .attr("id", "y-axis")
         .call(d3.axisLeft(y))
         // Add axis title
         .append("text")
@@ -469,14 +474,14 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
           .style("fill", "black");
 
     // Add dots
-    const dots = g3.append('g')
+    let dots = g3.append('g')
     .selectAll("dot")
     .data(processedData)
     .join("circle")
         .attr("cx", function (d) { return x(d.Weight_kg); } )
         .attr("cy", function (d) { return y(d.Total); } )
         .attr("r", 1.5)
-        .style("fill", "#6890F0");
+        .style("fill", function(d) { return color(d.Type_1)});
 
     // Add a title to g3
     g3.append("text")
@@ -485,11 +490,12 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .style("font-weight", "bold")
-        .text("Water Type Pokemon's Total Base Battle Stats vs Weight");
+        .text("Pokemon's Total Base Battle Stats vs Weight");
 
     // Add legend for Water type Pokemon
     const legend = svg.append("g")
     .attr("class", "legend")
+    .attr("id", "water-legend")
     .attr("transform", "translate(" + (scatterMargin.left + scatterLeft + scatterWidth + 20) + "," + (60) + ")");
 
     // Add colored circle for Water type Pokemon
@@ -504,6 +510,67 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     .attr("x", 10)
     .attr("y", 5)
     .text("Water Type Pokemon");
+
+    function updateScatterPlot(data, type) {
+
+        var xDomain = d3.extent(data, function(d) { return d.Weight_kg; });
+        x.domain([Math.max(0, xDomain[0]), xDomain[1] + 50]);
+    
+
+        var yDomain = d3.extent(data, function(d) { return d.Total; });
+        y.domain([Math.max(0, yDomain[0] - 50), yDomain[1]]);
+    
+        dots.node().parentNode.remove(dots);
+
+        if (type === "All") {
+            d3.select("#water-legend")
+                .style("opacity", "0");
+        } else {
+            d3.select("#water-legend")
+                .style("opacity", "1");
+        }
+        // Append new dots
+        dots = g3.append("g").selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("r", 1.5)
+            .attr("cx", function(d) { return x(d.Weight_kg); })
+            .attr("cy", function(d) { return y(d.Total); })
+            .style("fill", function(d) { return color(d.Type_1)});
+
+        // Update the x-axis
+        g3.select("#x-axis")
+            .transition()
+            .call(d3.axisBottom(x));
+    
+        // Update the y-axis
+        g3.select("#y-axis")
+            .transition()
+            .call(d3.axisLeft(y));
+    }
+
+    const all_group = ["Water Type", "All"];
+
+    const option_button = g3.append("foreignObject")
+    .attr("width", 100)
+    .attr("height", 40)
+    .attr("x", scatterWidth + 20)
+    .attr("y", 100)
+    .append("xhtml:select")
+    .attr("id", "mySelect")
+
+    option_button.selectAll("option")
+        .data(all_group)
+        .enter().append("option")
+        .text(function (d) { return d; })
+        .attr("value", function (d) { return d; })
+
+    d3.select("#mySelect").on("change", function(d) {
+        var selected = d3.select(this).node().value;
+        updateScatterPlot((selected === "Water Type") ? processedData : rawData, selected);
+        
+    })   
 
 }).catch(function(error){
     console.log(error);
