@@ -309,10 +309,6 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .attr("y", legendRectSize - legendSpacing)
         .text(function (d) { return d; });
 
-    // Query the leftmost and rightmost position to location the title
-    const legendLeftPosition = pieMargin.left;
-    const pieRightPosition = pieMargin.left + radius * 2 + pieLeft;
-
     // Add title
     svg.append("text")
         .attr("x", (pieMargin.left + radius + pieLeft))
@@ -355,7 +351,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     var labels = g3.selectAll("text").data(print_name)
         .enter().append('text')
         .attr("x", scatterWidth + 20)
-        .attr("y", (d, i)=> i*20 + 60)
+        .attr("y", (d, i)=> i*20)
         .text((d,i) => `${d}`+': '+`${default_output[i]}`)
 
     // Define brush
@@ -425,7 +421,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
             .range(colors);
 
         labels.data(print_name).attr("x", scatterWidth + 20)
-            .attr("y", (d, i)=> i*20 + 60)
+            .attr("y", (d, i)=> i*20)
             .text((d,i) => `${d}`+': '+`${output[i]}`)
 
         d3.selectAll(".line")
@@ -451,7 +447,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .append("text")
           .style("text-anchor", "middle")
           .attr("transform", `translate(${scatterWidth + 40}, ${0})`)
-          .attr("y", -10)
+          .attr("y", 0)
           .style("font-size", "12px")
           .text("Weight in Kg")
           .style("fill", "black");
@@ -493,23 +489,51 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         .text("Pokemon's Total Base Battle Stats vs Weight");
 
     // Add legend for Water type Pokemon
-    const legend = svg.append("g")
-    .attr("class", "legend")
-    .attr("id", "water-legend")
-    .attr("transform", "translate(" + (scatterMargin.left + scatterLeft + scatterWidth + 20) + "," + (60) + ")");
+    const legend_water = svg.append("g")
+        .attr("class", "legend")
+        .attr("id", "water-legend")
+        .attr("transform", "translate(" + (scatterMargin.left + scatterLeft + scatterWidth + 20) + "," + (60) + ")");
 
     // Add colored circle for Water type Pokemon
-    legend.append("circle")
-    .attr("cx", 0)
-    .attr("cy", 0)
-    .attr("r", 5)
-    .style("fill", "#6890F0");
+    legend_water.append("circle")
+        .attr("cx", 0)
+        .attr("cy", 75)
+        .attr("r", 5)
+        .style("fill", "#6890F0");
 
     // Add text label for Water type Pokemon
-    legend.append("text")
-    .attr("x", 10)
-    .attr("y", 5)
-    .text("Water Type Pokemon");
+    legend_water.append("text")
+        .attr("x", 10)
+        .attr("y", 80)
+        .text("Water Type Pokemon");
+
+    const legend = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${scatterMargin.left + scatterLeft + scatterWidth + 20}, ${130})`);
+    const legend_radius = 5;
+    const legendSpacing = 4;
+    // Create legend items
+    const legendItems = legend.selectAll(".legend-item-graph3")
+        .data(allTypeOne)
+        .enter()
+        .append("g")
+        .attr("class", "legend-item-graph3")
+        .attr("id", "all-legend")
+        .attr("transform", function (d, i) { return `translate(0, ${i * legend_radius * 2.5})`; })
+        .style("opacity", "0");
+
+    // Append rectangles to the legend items
+    legendItems.append("circle")
+        .attr("r", legend_radius)
+        .attr("cx", legend_radius)
+        .attr("cy", legend_radius)
+        .style("fill", function (d) { return color(d); });
+
+    // Append text to the legend items
+    legendItems.append("text")
+        .attr("x", legend_radius * 3)
+        .attr("y", legend_radius * 2)
+        .text(function (d) { return d; });
 
     function updateScatterPlot(data, type) {
 
@@ -525,9 +549,13 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
         if (type === "All") {
             d3.select("#water-legend")
                 .style("opacity", "0");
+            d3.selectAll("#all-legend")
+                .style("opacity", "1");
         } else {
             d3.select("#water-legend")
                 .style("opacity", "1");
+            d3.selectAll("#all-legend")
+                .style("opacity", "0");
         }
         // Append new dots
         dots = g3.append("g").selectAll("circle")
@@ -556,7 +584,7 @@ d3.csv("../data/pokemon_alopez247.csv").then(rawData => {
     .attr("width", 100)
     .attr("height", 40)
     .attr("x", scatterWidth + 20)
-    .attr("y", 100)
+    .attr("y", 40)
     .append("xhtml:select")
     .attr("id", "mySelect")
 
