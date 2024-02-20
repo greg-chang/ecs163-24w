@@ -329,7 +329,8 @@ d3.csv("ds_salaries.csv").then(rawData =>{
         .domain([0, d3.max(companySizeSalaries, function(d) { return d.avg_salary; })]);
     svg3.append("g")
         .call(d3.axisLeft(y));
-    svg3.selectAll("bar")
+    
+    var rects = svg3.selectAll("bar")
         .data(companySizeSalaries)
         .enter()
         .append("rect")
@@ -338,6 +339,8 @@ d3.csv("ds_salaries.csv").then(rawData =>{
         .attr("width", x.bandwidth())
         .attr("height", function(d) { return height3 - y(d.avg_salary); })
         .attr("fill", "#69b3a2");
+
+    
     //add x axis title
     svg3.append("text")
         .attr("x", width3-150)
@@ -357,4 +360,61 @@ d3.csv("ds_salaries.csv").then(rawData =>{
         .attr("y", 410)
         .style("text-anchor", "middle")
         .text("Average Salary by Company Size");
+    rects.on("click", function(d){
+        if (d3.select(this).attr("fill") === "#69b3a2"){
+            d3.select(this).attr("fill", "#80B1D3");
+            svg3.append("text")
+                .attr("class", "barText")
+                .attr("x", x(d.company_size) + 30)
+                .attr("y", y(d.avg_salary) - 10)
+                .text("$" + d.avg_salary);
+        }
+        else{
+            d3.select(this).attr("fill", "#69b3a2");
+            svg3.select(".barText").remove();
+        }
+    });
+    var sorted = false;
+    d3.select("#sort").on("click", function(){
+        if (!sorted){
+            companySizeSalaries.sort(function(a, b){
+                sorted = true;
+                return d3.descending(a.avg_salary, b.avg_salary);
+            });
+        }
+        else{
+            companySizeSalaries.sort(function(a, b){
+                sorted = false;
+                return d3.ascending(a.avg_salary, b.avg_salary);
+            });
+        }
+        svg3.selectAll("rect").attr("fill", "#69b3a2");
+        svg3.select(".barText").remove();
+        x.domain(companySizeSalaries.map(function(d) { return d.company_size; }));
+        rects.transition().duration(1000).attr("x", function(d) { return x(d.company_size); });
+        svg3.select("g")
+            .transition().duration(1000)
+            .attr("transform", `translate(0, ${height3})`)
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("transform", "translate(-5,-5)rotate(-45)")
+            .style("text-anchor", "end");
+    });
+    //when the button with id="Reset" is clicked, the barplot will reset to its original state
+    d3.select("#reset").on("click", function(){
+        companySizeSalaries.sort(function(a, b){
+            return d3.ascending(a.company_size, b.company_size);
+        });
+        svg3.selectAll("rect").attr("fill", "#69b3a2");
+        svg3.select(".barText").remove();
+        x.domain(companySizeSalaries.map(function(d) { return d.company_size; }));
+        rects.transition().duration(1000).attr("x", function(d) { return x(d.company_size); });
+        svg3.select("g")
+            .transition().duration(1000)
+            .attr("transform", `translate(0, ${height3})`)
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("transform", "translate(-5,-5)rotate(-45)")
+            .style("text-anchor", "end");
+    });
 });
