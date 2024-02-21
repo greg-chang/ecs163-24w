@@ -212,9 +212,9 @@ d3.csv("ds_salaries.csv").then(data => {
   // animate line stroke?
   // line chart year vs average salary
   const g3 = svg.append("g")
-              .attr("width", lineWidth + lineMargin.left + lineMargin.right)
-              .attr("height", lineHeight + lineMargin.top + lineMargin.bottom)
-              .attr("transform", `translate(${lineMargin.left + 50 + barWidth + 200}, ${lineTop})`)
+    .attr("width", lineWidth + lineMargin.left + lineMargin.right)
+    .attr("height", lineHeight + lineMargin.top + lineMargin.bottom)
+    .attr("transform", `translate(${lineMargin.left + 50 + barWidth + 200}, ${lineTop})`)
               
   let years = groupBy(data, "work_year");
   formattedData = [];
@@ -244,37 +244,81 @@ d3.csv("ds_salaries.csv").then(data => {
     .call(d3.axisLeft(y));
   
   // Add the line
-  g3.append("path")
-    .datum(formattedData)
-    .attr("fill", "none")
-    .attr("stroke", "#69b3a2")
-    .attr("stroke-width", 1.5)
-    .attr("d", d3.line()
-      .x(d => x(d.year))
-      .y(d => y(d.average))
+  // Function to animate the line stroke
+  function animateLineStroke() {
+    // Add the line with stroke animation
+    g3.append("path")
+      .datum(formattedData)
+      .attr("class", "animated-path") // Add a specific class to prevent removal of axes lines
+      .attr("fill", "none")
+      .attr("stroke", "#69b3a2")
+      .attr("stroke-width", 1.5)
+      .attr("d", d3.line()
+        .x(d => x(d.year))
+        .y(d => y(d.average))
     )
-    .each(function() {
-      const path = this;
-      const totalLength = path.getTotalLength();
-      d3.select(path)
-        .attr("stroke-dasharray", totalLength + " " + totalLength)
-        .attr("stroke-dashoffset", totalLength)
-        .transition()
-        .duration(5000) // Duration of animation in milliseconds
-        .ease(d3.easeLinear)
-        .attr("stroke-dashoffset", 0);
-    });
+    
+      .each(function() {
+        const path = this;
+        const totalLength = path.getTotalLength();
+        d3.select(path)
+          .attr("stroke-dasharray", totalLength + " " + totalLength)
+          .attr("stroke-dashoffset", totalLength)
+          .transition()
+          .duration(2000) // Duration of animation in milliseconds
+          .ease(d3.easeLinear)
+          .attr("stroke-dashoffset", 0);
+      });
+    }
+
+    // Call animateLineStroke function initially
+    animateLineStroke();
+
+    g3.append("g")
+      .attr("class", "replay-button")
+      .append("rect")
+      .attr("x", 50)
+      .attr("y", parallelHeight+100)
+      .attr("width", 120)
+      .attr("height", 30)
+      .attr("fill", "#ddd")
+      .attr("rx", 5)
+      .on("click", function() {
+        // Clear existing paths
+        g3.selectAll(".animated-path").remove();
+        // Re-run the animation
+        animateLineStroke();
+      }); 
+      
+  var tooltip = d3.select('body')
+      .append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
   
   // Add the points
-  g3
-    .append("g")
+  g3.append("g")
     .selectAll("dot")
     .data(formattedData)
     .join("circle")
-      .attr("cx", d => x(d.year) )
-      .attr("cy", d => y(d.average)) 
+      .attr("cx", d => x(d.year))
+      .attr("cy", d => y(d.average))
       .attr("r", 5)
-    .attr("fill", "#69b3a2")
+      .attr("fill", "#69b3a2")
+    .on("mouseover", function(event, d) {
+      tooltip.transition()
+        .duration(200)
+        .style("opacity", .9);
+      tooltip.html("Y-value: " + d3.format(",.2f")(d.average))
+        .style("left", (event.pageX) + "px")
+        .style("top", (event.pageY - 28) + "px");
+      // console.log(event.pageX+ ', ' + event.pageY)
+    })
+    .on("mouseout", function(d) {
+      tooltip.transition()
+        .duration(500)
+        .style("opacity", 0);
+    });
+  
   
   // chart title
   g3.append("text")
@@ -298,6 +342,14 @@ d3.csv("ds_salaries.csv").then(data => {
     .style("font-size", "14px") 
     .style("text-decoration", "underline")  
     .text("Year");
+  
+  g3.select(".replay-button")
+    .append("text")
+    .style("font-size","12px")
+    .attr("x", 110)
+    .attr("y", parallelHeight+120)
+    .attr("text-anchor", "middle")
+    .text("Click me!");
   
   
 }).catch(function(error){
