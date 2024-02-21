@@ -213,8 +213,6 @@ function updateStar(data) {
         exit => {
             console.log("exit")
             return exit
-                .transition()
-                .attr("opacity", 0.0)
                 .remove();
         }
     )
