@@ -22,6 +22,8 @@ d3.csv("ds_salaries.csv").then(data => {
   
   const svg = d3.select("svg")
   // parallel plot
+  // animation: change axis order?
+  // select only certain lines?
   
   const g1 = svg.append("g")
                 .attr("width", parallelWidth + parallelMargin.left + parallelMargin.right)
@@ -54,14 +56,14 @@ d3.csv("ds_salaries.csv").then(data => {
   }
 
   // Build the X scale -> it find the best position for each Y axis
-  x = d3.scalePoint()
+  x_g2 = d3.scalePoint()
     .range([0, parallelWidth])
     .padding(1)
     .domain(dimensions);
 
   // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
   function path(d) {
-      return d3.line()(dimensions.map(function(p) { return [x(p), y1[p](d[p])]; }));
+      return d3.line()(dimensions.map(function(p) { return [x_g2(p), y1[p](d[p])]; }));
   }  
 
   // Draw the lines
@@ -80,7 +82,7 @@ d3.csv("ds_salaries.csv").then(data => {
     .data(dimensions).enter()
     .append("g")
     // I translate this element to its right position on the x axis
-    .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+    .attr("transform", function(d) { return "translate(" + x_g2(d) + ")"; })
     // And I build the axis with the call function
     .each(function(d) { d3.select(this).call(d3.axisLeft().scale(y1[d])); })
     // Add axis title
@@ -99,7 +101,6 @@ d3.csv("ds_salaries.csv").then(data => {
     .text("Overview of Data Scientist Work Aspects");
   
   // ----------------------------------------------------------------------------------
-  // add zoom
   // bar graph: average salary per experience level
   
   const g2 = svg.append("g")
@@ -138,17 +139,20 @@ d3.csv("ds_salaries.csv").then(data => {
   let y_axis_start = (barHeight+barMargin.top+210);
 
   // X axis
-  var x = d3.scaleLinear()
+  var x_g2 = d3.scaleLinear()
     .domain([0, 200000])
     .range([0, barWidth]);
   
+  let axis = d3.axisBottom(x_g2)
+
   g2.append("g")
     .attr("transform", "translate(" + barLeft + ',' + (barHeight+barMargin.top+210) + ")")
-    .call(d3.axisBottom(x))
+    .call(axis)
     .selectAll("text")
       .attr("transform", "translate(-10,0)rotate(-45)")
       .style("text-anchor", "end");
-      
+  
+  
   // Y axis
   var y = d3.scaleBand()
     .range([ 0, barHeight/3 ])
@@ -163,9 +167,9 @@ d3.csv("ds_salaries.csv").then(data => {
     .selectAll("rect") 
     .data(formattedData)
     .join("rect")
-    .attr("x", x(0) )
+    .attr("x", x_g2(0) )
     .attr("y", d => y(d.exp_lvl))
-    .attr("width", d => x(d.average))
+    .attr("width", d => x_g2(d.average))
     .attr("height", y.bandwidth())
     .attr("fill", "#69b3a2")
     .attr("transform", "translate(" + barLeft + ',' + y_axis_start + ")")
@@ -192,6 +196,24 @@ d3.csv("ds_salaries.csv").then(data => {
     .style("text-decoration", "underline")  
     .text("Salary in USD");
   
+  var zoom = d3.zoom()
+    .scaleExtent([1, Infinity])
+    .translateExtent([[0, 0], [barWidth, barHeight]])
+    .extent([[0, 0], [barWidth, barHeight]])
+    .on("zoom", zoomed);
+  
+  // Call the zoom function on the g2 element
+  g2.call(zoom);
+  
+  // Define the zoomed function to handle zooming
+  function zoomed(event, d) {
+    let zoomedScale = event.transform.rescaleX(x_g2);
+    axis.scale(zoomedScale);
+    g2.call(axis);
+    g2.selectAll("rect")
+      .attr("x", function(d) { return newX(0); })
+      .attr("width", function(d) { return newX(d.average); });
+  }
   // function zoom(g2) {
   //   const extent = [[barLeft, barMargin.top], [barWidth - barMargin.right, barHeight - barMargin.top]];
 
@@ -230,12 +252,12 @@ d3.csv("ds_salaries.csv").then(data => {
     formattedData.push(processedObj);
   });
   
-  x = d3.scalePoint()
+  x_g2 = d3.scalePoint()
       .domain([...new Set(data.map(item => item['work_year']))].sort())
       .range([ lineMargin.left, lineWidth-50 ]);
   g3.append("g")
     .attr("transform", "translate(0," + (height/2 + 255) + ")")
-    .call(d3.axisBottom(x));
+    .call(d3.axisBottom(x_g2));
       
   y = d3.scaleLinear()
     .domain( [90000, 160000])
@@ -254,7 +276,7 @@ d3.csv("ds_salaries.csv").then(data => {
       .attr("stroke", "#69b3a2")
       .attr("stroke-width", 1.5)
       .attr("d", d3.line()
-        .x(d => x(d.year))
+        .x(d => x_g2(d.year))
         .y(d => y(d.average))
     )
     
@@ -300,7 +322,7 @@ d3.csv("ds_salaries.csv").then(data => {
     .selectAll("dot")
     .data(formattedData)
     .join("circle")
-      .attr("cx", d => x(d.year))
+      .attr("cx", d => x_g2(d.year))
       .attr("cy", d => y(d.average))
       .attr("r", 5)
       .attr("fill", "#69b3a2")
@@ -309,7 +331,7 @@ d3.csv("ds_salaries.csv").then(data => {
         .duration(200)
         .style("opacity", .9);
       tooltip.html("Y-value: " + d3.format(",.2f")(d.average))
-        .style("left", (event.pageX) + "px")
+        .style("left", (event.pageX + 10) + "px")
         .style("top", (event.pageY - 28) + "px");
       // console.log(event.pageX+ ', ' + event.pageY)
     })
