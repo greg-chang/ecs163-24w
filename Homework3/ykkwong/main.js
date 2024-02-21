@@ -99,11 +99,15 @@ d3.csv("ds_salaries.csv").then(data => {
     .text("Overview of Data Scientist Work Aspects");
   
   // ----------------------------------------------------------------------------------
-  // bar graph: average salary per experience level            
+  // add zoom
+  // bar graph: average salary per experience level
+  
   const g2 = svg.append("g")
-              .attr("width", barWidth + barMargin.left + barMargin.right)
-              .attr("height", barHeight + barMargin.top + barMargin.bottom)
-              .attr("transform", `translate(${barMargin.left}, ${barTop})`)
+    .attr("width", barWidth + barMargin.left + barMargin.right)
+    .attr("height", barHeight + barMargin.top + barMargin.bottom)
+    .attr("transform", `translate(${barMargin.left}, ${barTop})`)
+    // .call(zoom);
+    
   
   function groupBy(objectArray, property) {
     return objectArray.reduce(function (acc, obj) {
@@ -165,7 +169,7 @@ d3.csv("ds_salaries.csv").then(data => {
     .attr("height", y.bandwidth())
     .attr("fill", "#69b3a2")
     .attr("transform", "translate(" + barLeft + ',' + y_axis_start + ")")
-
+    
   g2.append("text")
     .attr("transform", "translate(" + (barLeft + barMargin.left + 150) + ',' + (barHeight + parallelHeight - 20) + ")")
     .attr("text-anchor", "middle")  
@@ -188,7 +192,24 @@ d3.csv("ds_salaries.csv").then(data => {
     .style("text-decoration", "underline")  
     .text("Salary in USD");
   
+  // function zoom(g2) {
+  //   const extent = [[barLeft, barMargin.top], [barWidth - barMargin.right, barHeight - barMargin.top]];
+
+  //   g2.call(d3.zoom()
+  //       .scaleExtent([1, 8])
+  //       .translateExtent(extent)
+  //       .extent(extent)
+  //       .on("zoom", zoomed));
+
+  //   function zoomed(event) {
+  //     y.range([barMargin.left, barWidth - barMargin.right].map(d => event.transform.applyX(d)));
+  //     g2.selectAll("rect").attr("x", d => x(d.average)).attr("width", x.bandwidth());
+  //     g2.selectAll("x").call(x);
+  //   }
+  // }
   //-----------------------------------------------------------------------------------
+  // add brush tooltip over data points
+  // animate line stroke?
   // line chart year vs average salary
   const g3 = svg.append("g")
               .attr("width", lineWidth + lineMargin.left + lineMargin.right)
@@ -231,7 +252,19 @@ d3.csv("ds_salaries.csv").then(data => {
     .attr("d", d3.line()
       .x(d => x(d.year))
       .y(d => y(d.average))
-      )
+    )
+    .each(function() {
+      const path = this;
+      const totalLength = path.getTotalLength();
+      d3.select(path)
+        .attr("stroke-dasharray", totalLength + " " + totalLength)
+        .attr("stroke-dashoffset", totalLength)
+        .transition()
+        .duration(5000) // Duration of animation in milliseconds
+        .ease(d3.easeLinear)
+        .attr("stroke-dashoffset", 0);
+    });
+  
   // Add the points
   g3
     .append("g")
