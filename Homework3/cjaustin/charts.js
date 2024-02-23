@@ -218,7 +218,7 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
             .text(d3.max(mapData, (d) => d.instances))
             .style("font-size", "12px")
         
-        // Add title
+        // Add title and interaction tip
         svg.append("text")
             .attr("class", "chart-title")
             .attr("transform", 
@@ -226,6 +226,14 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
             .attr("text-anchor", "middle")
             .text("Total Terror Attacks per Country (1970-2017)")
             .style("font-size", "24px")
+        
+        svg.append("text")
+            .attr("class", "chart-interaction")
+            .attr("transform", 
+                `translate(${mapDim.left + (mapDim.width / 2)},${mapDim.top + (0.75 * mapDim.marginY)})`)
+            .attr("text-anchor", "middle")
+            .text("Hover to see exact attacks for each country")
+            .style("font-size", "14px")
     }).catch((err) => {
 
         console.log(err)
@@ -261,7 +269,7 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
             .attr("d", path)
             .attr("fill", (d) => colours(d.data.region))
     
-    // Add title
+    // Add title and interaction tip
     svg.append("text")
         .attr("class", "chart-title")
         .attr("transform", 
@@ -269,6 +277,14 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
         .attr("text-anchor", "middle")
         .text("Total Deaths per Region")
         .style("font-size", "18px")
+    
+    svg.append("text")
+        .attr("class", "chart-interaction")
+        .attr("transform", 
+            `translate(${pieDim.left + (pieDim.width / 2)},${pieDim.top + (pieDim.height / 2) - radius - (0.5 * pieDim.marginY)})`)
+        .attr("text-anchor", "middle")
+        .text("Press 'Play' to see how regional deaths have changed each year")
+        .style("font-size", "10px")
     
     // Stream
     // Create stack
@@ -406,13 +422,20 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
             .style("alignment-baseline", "middle")
             .style("font-size", "14px")
 
-    // Add title
+    // Add title and interaction tip
     svg.append("text")
             .attr("class", "chart-title")
             .attr("transform", `translate(${streamDim.left + streamDim.width / 2},${streamDim.top + streamDim.marginY})`)
             .attr("text-anchor", "middle")
         .text("Terror Attacks per Region Over Time")
             .style("font-size", "18px")
+    
+    svg.append("text")
+            .attr("class", "chart-interact")
+            .attr("transform", `translate(${streamDim.left + streamDim.width / 2},${streamDim.top + (1.5 * streamDim.marginY)})`)
+            .attr("text-anchor", "middle")
+        .text("Brush to zoom in on a section. Double click to reset")
+            .style("font-size", "10px")
 }).catch((err) => {
 
     console.log(err)
