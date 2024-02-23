@@ -111,6 +111,45 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
             .domain(d3.extent(mapData, (d) => d.instances))
             .range(d3.schemeReds[9])
 
+        // Define hover events
+        let mapMouseOn = (d) => {
+            d3.selectAll(".Country")
+                .transition()
+                .duration(200)
+                .style("opacity", .5)
+            d3.select(d.originalTarget)
+                .transition()
+                .duration(200)
+                .style("opacity", 1)
+            let tt = d3.select(".Tooltip")
+                .transition()
+                .duration(200)
+                .style("opacity", 1)
+            let countryName = nameMap(d.originalTarget.__data__.properties.name)
+            let deaths = mapAggregate[countryName]
+            if (deaths === undefined) {
+                deaths = "No Data"
+            }
+            tt.select("text")
+                .text(countryName + ": " + deaths)
+        }
+
+        let mapMouseOff = (d) => {
+            d3.selectAll(".Country")
+                .transition()
+                .duration(200)
+                .style("opacity", 1)
+            d3.select(".Tooltip")
+                .transition()
+                .duration(200)
+                .style("opacity", 0)
+        }
+
+        let mapMouseMove = (d) => {
+            d3.select(".Tooltip")
+                .attr("transform", `translate(${d.clientX + 10},${d.clientY + 10})`)
+        }
+
         // Draw the map
         svg.append("g")
             .selectAll("path")
@@ -129,8 +168,19 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
                     }
                 })
                 .attr("d", d3.geoPath().projection(projection))
-                .style("stroke", "black")
+                .attr("class", "Country")
+                .style("stroke", "gray")
+                .on("mouseover", mapMouseOn)
+                .on("mouseleave", mapMouseOff)
+                .on("mousemove", mapMouseMove)
         
+        // Add data tooltip
+        let tooltip = svg.append("g")
+            .attr("class", "Tooltip")
+        tooltip.append("text")
+            .text("Test")
+            .style("font-size", "14px")
+                
         // Add legend
         svg.append('defs')
             .append('linearGradient')
