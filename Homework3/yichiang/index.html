@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Student Mental Health Dashboard</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+			display: flex;
+			flex-direction: column; 
+			align-items: center;
+			justify-content: center;
+			margin: 0;
+			padding: 0;
+			height: 100vh; 
+			width: 100vw;
+			background-color: #f4f4f4;
+        }
+
+        .chart-container {
+            display: flex; 
+            justify-content: space-around; 
+            width: 100%; 
+        }
+
+        #bar-chart, #mental-health-pie-chart {
+			flex: 1; 
+			margin: 20px;
+			border: 1px solid #ccc;
+			background-color: #fff;
+			box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        #bar-chart svg, #mental-health-pie-chart svg, #stream-chart svg {
+            overflow: visible;
+        }
+
+        svg {
+            display: block;
+            margin: auto;
+        }
+
+        .text {
+            text-anchor: middle;
+            font-size: 14px;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+			shape-rendering: crispEdges;
+        }
+
+        .axis text {
+			font-size: 12px;
+			color: #666;
+		}
+		.node rect {
+            fill-opacity: .9;
+            shape-rendering: crispEdges;
+        }
+        .node text {
+            fill: #000;
+            font: 10px sans-serif;
+        }
+        .link {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: .2;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <div id="bar-chart"></div>
+        <div id="mental-health-pie-chart"></div>
+	</div>
+    <div id="tooltip" style="opacity: 0; position: absolute; background-color: white; border: 1px solid #ddd; border-radius: 5px; padding: 10px; text-align: center; font-size: 12px; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); pointer-events: none;"></div>
+	<svg id="stream-chart" width="1200" height="500"></svg>
+    <script src="main.js"></script>
+</body>
+</html>
+
