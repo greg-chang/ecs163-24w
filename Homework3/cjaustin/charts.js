@@ -151,8 +151,9 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
         }
 
         // Draw the map
-        svg.append("g")
-            .selectAll("path")
+        let g = svg.append("g")
+
+        g.selectAll("path")
             .data(mapShape.features)
             .enter()
             .append("path")
@@ -282,11 +283,11 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
             }}})(d3.index(streamData, (d) => d.date, (d) => d.region))
 
     // Create axes
-    let x = d3.scaleUtc()
+    var x = d3.scaleUtc()
         .domain(d3.extent(streamData, (d) => d.date))
         .range([streamDim.marginX, streamDim.width - streamDim.marginX])
 
-    let y = d3.scaleLinear()
+    var y = d3.scaleLinear()
         .domain([0, d3.max(stack, (d) => d3.max(d, (d) => d[1]))])
         .rangeRound([streamDim.height - streamDim.marginY, streamDim.marginY])
 
@@ -297,10 +298,10 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
         .y1((d) => y(d[1]))
 
     // Render axes
-    svg.append("g")
+    var xAxis = svg.append("g")
             .attr("transform", `translate(${streamDim.left},${streamDim.top + streamDim.height - streamDim.marginY})`)
         .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0))
-    svg.append("g")
+    var yAxis = svg.append("g")
             .attr("transform", `translate(${streamDim.left + streamDim.marginX},${streamDim.top})`)
         .call(d3.axisLeft(y))
         .call(g => g.append("text")
@@ -317,15 +318,70 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
             .text("Date"))
 
     // Render areas
-    svg.append("g")
-        .selectAll()
+    let displayBound = svg.append("defs")
+        .append("clipPath")
+        .attr("id", "stackBound")
+        .append("rect")
+            .attr("x", streamDim.left + streamDim.marginX)
+            .attr("y", streamDim.top + streamDim.marginY)
+            .attr("width", streamDim.width - streamDim.marginX)
+            .attr("height", streamDim.height - streamDim.marginY)
+
+    let streamG = svg.append("g")
+        .attr("clip-path", "url(#stackBound)")
+    streamG.selectAll()
         .data(stack)
         .join("path")
+            .attr("class", "stackLevel")
             .attr("fill", d => colours(d.key))
             .attr("d", area)
             .attr("transform", `translate(${streamDim.left},${streamDim.top})`)
         .append("title")
             .text(d => d.key)
+    
+    // Add brush
+    let reframeChart = (event) => {
+        console.log("brushed")
+        let extent = event.selection
+        if (!extent) {
+            
+        } else {
+            x.domain([x.invert(extent[0]), x.invert(extent[1])])
+            streamG.select(".brush")
+                .call(brush.move, null)
+        }
+
+        xAxis.transition()
+            .duration(200)
+            .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0))
+        streamG.selectAll(".stackLevel")
+            .transition()
+            .duration(200)
+            .attr("d", area)
+    }
+
+    let resetStream = (event) => {
+        console.log("reset")
+        x.domain(d3.extent(streamData, (d) => d.date))
+        xAxis.transition()
+            .duration(200)
+            .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0))
+        streamG.selectAll(".stackLevel")
+            .transition()
+            .duration(200)
+            .attr("d", area)
+    }
+
+    var brush = d3.brushX()
+        .extent([[streamDim.left + streamDim.marginX, streamDim.top + streamDim.marginY], 
+            [streamDim.left + streamDim.width - streamDim.marginX, streamDim.top + streamDim.height - streamDim.marginY]])
+        .on("end", reframeChart)
+    
+    streamG.append("g")
+        .attr("class", "brush")
+        .call(brush)
+    
+    streamG.on("dblclick", resetStream)
 
     // Add legend
     svg.selectAll("mydots")
