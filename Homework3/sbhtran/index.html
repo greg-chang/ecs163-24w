@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Cosmetic Analysis</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            width: 100%; 
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%; 
+            display: flex;
+            flex-direction: column; 
+            align-items: center; 
+            margin-bottom: 40px;
+        }
+        .bar {
+            fill: rgb(180, 70, 140);
+        }
+        .bar:hover {
+            fill: rgb(255, 202, 229);
+        }
+        .axis-label {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Samantha Tran's HW 3</h1>
+    <h1>Visualization Dashboard: Interactivity</h1>
+
+    <h2>Bar Chart: Skin Type</h2>
+    <h2a>(Hover over the bars to view the different skin types. Click on the "Sort Bars" button to sort the bars from greatest to least.)</h2a>
+    <div class="chart-container">
+        <div id="bar-chart"></div>
+        <button id="sortButton">Sort Bars</button>
+    </div>
+
+    <h2>Pie Chart: Brand Distribution</h2>
+    <h2a>(Hover over the pie chart to view different cosmetic brands.)</h2a>
+    <div class="chart-container">
+        <div id="pie-chart"></div>
+    </div>
+
+    <h2>Parallel Coordinate: Label vs. Price</h2>
+    <h2a>(Drag the mouse over the plot to look at specific connections.)</h2a>
+    <div class="chart-container">
+        <div id="parallel-coordinates-plot"></div>
+    </div>
+    
+
+    <script src="main.js"></script>
+</body>
+</html>
