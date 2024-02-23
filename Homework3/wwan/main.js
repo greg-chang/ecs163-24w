@@ -165,31 +165,48 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
     const g2 = svg.append("g")
         .attr("width", pieWidth + pieMargin.left + pieMargin.right)
         .attr("height", pieHeight + pieMargin.top + pieMargin.bottom)
-        .attr("transform", `translate(${pieMargin.left}, ${pieMargin.top})`)
+        .attr("transform", `translate(${pieMargin.left}, ${pieMargin.top})`);
 
-    // pie chart
-    // reference: https://d3-graph-gallery.com/graph/pie_annotation.html
-    g2
+    // Pie chart
+    // Reference: https://d3-graph-gallery.com/graph/pie_annotation.html
+    const slices = g2
         .selectAll('slices')
         .data(pieData)
         .enter()
-        .append('path')
-        .attr('d', arcGenerator)
+        .append('g');
+
+    // Append path for each slice
+    slices.append('path')
         .attr('fill', function (d) { return (color(d.data[1])) })
         .attr("stroke", "black")
         .style("stroke-width", "2px")
-        .style("opacity", 0.7)
+        .style("opacity", 0.7) // Initial opacity set to 0.7
+        .attr('d', arcGenerator({ startAngle: Math.PI * 2, endAngle: Math.PI * 2 })) // Initial arcs start from the same position
 
-    // labels
-    g2
-        .selectAll('mySlices')
-        .data(pieData)
-        .enter()
-        .append('text')
+    // Append text labels for each slice
+    slices.append('text')
         .text(function (d) { return d.value })
         .attr("transform", function (d) { return "translate(" + arcGenerator.centroid(d) + ")"; })
         .style("text-anchor", "middle")
         .style("font-size", 25)
+        .style("opacity", 0); // Initial opacity set to 0 for animation
+
+    // Transition to animate the pie chart
+    slices.selectAll('path')
+        .transition()
+        .duration(1500) // Animation duration in milliseconds
+        .attrTween('d', function (d) {
+            const start = { startAngle: Math.PI * 2, endAngle: Math.PI * 2 }; // Start with full circle
+            const interpolate = d3.interpolate(start, d); // Interpolate from full circle to actual arc
+            return function (t) { return arcGenerator(interpolate(t)); }; // Return interpolated arc path
+        });
+
+    // Transition to animate the labels
+    slices.selectAll('text')
+        .transition()
+        .duration(4000) // Animation duration in milliseconds
+        .style("opacity", 1); // Transition to final opacity
+
 
 
     // legend
