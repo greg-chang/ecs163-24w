@@ -96,14 +96,42 @@ d3.csv("MusicMentalHealth.csv").then(rawData => {
         .ticks(6)
     g1.append("g").call(yAxisCall2)
 
-    const rects2 = g1.selectAll("rect").data(r)
-
-    rects2.enter().append("rect")
+    const rects2 = g1.selectAll("rect")
+        .data(r)
+        .enter()
+        .append("rect")
         .attr("y", d => y2(d.count))
-        .attr("x", (d) => x2(d.hours))
-        .attr("width", x2.bandwidth)
+        .attr("x", d => x2(d.hours))
+        .attr("width", x2.bandwidth())
         .attr("height", d => hourHeight - y2(d.count))
-        .attr("fill", "#2b6ed9")
+        .attr("fill", "#2b6ed9");
+
+    // Brush event handler
+    function brushed() {
+        const selection = d3.event.selection;
+        console.log("Brushed:", selection); // Log the selection
+
+        if (selection) {
+            rects2.attr("fill", function (d) {
+                const x = x2(d.hours); // Get the x-coordinate of the bar
+                console.log("Bar X:", x); // Log the x-coordinate of the bar
+                const isSelected = x >= selection[0] && x + x2.bandwidth() <= selection[1]; // Check if the bar is selected
+                return isSelected ? "orange" : "#2b6ed9";
+            });
+        }
+    }
+
+
+    // Create the brush
+    const brush = d3.brushX()
+        .extent([[0, 0], [hourWidth, hourHeight]])
+        .on("brush", brushed);
+
+    // Append the brush to the SVG container
+    g1.append("g")
+        .attr("class", "brush")
+        .call(brush);
+
 
     // title
     g1.append("text")
