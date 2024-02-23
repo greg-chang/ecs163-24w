@@ -127,8 +127,6 @@ d3.csv("data/pokemon.csv").then(rawData => {
              }
          }
     
-
-    // Append brush to scatterplot
     g1.append("g")
         .attr("class", "brush")
         .call(brush);
