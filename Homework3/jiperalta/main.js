@@ -168,10 +168,12 @@ function updateStar(data) {
 
     const line = d3.line()
         .x(d => d.x)
-        .y(d => d.y);
+        .y(d => d.y)
+        .curve(d3.curveLinearClosed)
     const noLine = d3.line()
         .x(width / 2)
         .y(height / 2)
+        .curve(d3.curveLinearClosed)
 
     function getPathCoords(typeData) {
         let coordinates = [];
@@ -205,27 +207,27 @@ function updateStar(data) {
         enter => {
             return enter
                 .append("path")
+                .attr("transform-origin", (width / 2) + " " + (height / 2))
                 .attr("transform", "scale(0.0)")
         },
         update => {
             return update;
         },
         exit => {
-            console.log("exit")
             return exit
                 .remove();
         }
     )
-    .attr("transform-origin", (width / 2) + " " + (height / 2))
     .attr("stroke", d => { return d.color; })
-    .attr("fill", d => { return d.color; })
-    .attr("stroke-width", 0)
+    .attr("fill", "none")
+    .attr("stroke-width", 3)
     .attr("opacity", 1.0)
     .datum(d => getPathCoords(d))
     .attr("d", line)
     .transition()
-    .duration(750)
     .attr("transform", "scale(1.0)")
+
+    console.log(line)
 }
 
 function createScatter(data) {
@@ -409,14 +411,21 @@ function createBarChart(data) {
             .attr("y", d => { return yAxis(d.avgStatTotal) })
             .attr("width", xAxis.bandwidth())
             .attr("height", d => { return height - yAxis(d.avgStatTotal) })
+            .attr("opacity", "0.1")
             .style("fill", d => { return colorMap.get(d.type); })
 
-    bars.on("click", d => {
+    bars.on("click", function(d) {
         if (selectedTypes.has(d.type)) {
             selectedTypes.delete(d.type);
+            d3.select(this)
+                .transition()
+                .attr("opacity", "0.1")
         }
         else {
             selectedTypes.add(d.type);
+            d3.select(this)
+                .transition()
+                .attr("opacity", "1.0")
         }
         updateScatterPlot(data);
         updateStar(data);
