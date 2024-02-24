@@ -40,7 +40,7 @@ We provided template using Javascript, you can find it and more technical detail
 
 Note that you are free to use other existing frameworks and libraries in JavaScript to implement your interface, while d3.js remains required for completing this assignment.
 
-To start the application, open folder which contains all your files in **VSCode**, then open *index.html* file, right click on the mouse and press "open with liver server".
+To start the application, open folder which contains all your files in **VSCode**, then open *index.html* file, right click on the mouse and press "open with Live Server".
 
 
 # Requirements
