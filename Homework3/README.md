@@ -1,3 +1,7 @@
+# Changes
+- Tooltip and animation has been added for the line plot
+- An attempt was made at implementing a selectable parallel plot using `d3.brush()`. It does not function.
+
 # Homework 3:  Visualization Dashboard Pt 2 (Interactivity)
 For Homework 3, you will be extending your Homework 2 dashboard to include interactions and animated transitions. **You may start fresh, i.e., selecting different datasets from HW2 or designing different visualizations.**
 Still, you will use JavaScript/TypeScript with [D3.js](https://d3js.org/).
