@@ -300,7 +300,7 @@ d3.csv("pokemon.csv").then(function(data) {
         .attr("transform", "rotate(90)")
         .style("text-anchor", "start");
 
-    // Add the y Axis
+    // Add the y Axi
     svg.append("g")
         .call(d3.axisLeft(y));
 
