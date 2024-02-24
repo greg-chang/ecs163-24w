@@ -28,11 +28,17 @@ d3.csv("ds_salaries.csv").then(data => {
                 .attr("width", parallelWidth + parallelMargin.left + parallelMargin.right)
                 .attr("height", parallelHeight + parallelMargin.top + parallelMargin.bottom)
                 .attr("transform", `translate(${parallelMargin.left}, ${parallelMargin.top})`)
+  
+  // var x = d3.scalePoint().range([0, parallelWidth]).padding(1);
+  // y = {};
+
+  var line = d3.line(),
+    axis_g1 = d3.axisLeft();
                 // .attr("class", "brush")
                 // .call(d3.brush().on("brush", brushed));
   // https://d3-graph-gallery.com/graph/parallel_basic.html
   // Extract the list of dimensions we want to keep in the plot. Keep all except the categoricals with too many unique values (>50).
-  allDimensions = Object.keys(data[0])
+  allDimensions = Object.keys(data[0]);
   dimensions = allDimensions.filter(function (d) {
     return (d != "job_title" &&
       d != "employee_residence" && d != "company_location" && d != "salary")
@@ -40,8 +46,8 @@ d3.csv("ds_salaries.csv").then(data => {
   
   // For each dimension, build a linear scale if numerical, else ordinal scale. Store all in a y object
   var y1 = {}
-  for (i in dimensions) {
-    dim = dimensions[i]
+  for (i in Object.keys(data[0])) {
+    dim = Object.keys(data[0])[i]
     if (dim != 'salary' && dim != 'salary_in_usd') {
       const uniqueDimVals = [...new Set(data.map(item => item[dim]))].sort();
       // console.log(uniqueDimVals)
@@ -61,7 +67,7 @@ d3.csv("ds_salaries.csv").then(data => {
     .range([0, parallelWidth])
     .padding(1)
     .domain(dimensions);
-
+/*
   // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
   function path(d) {
       return d3.line()(dimensions.map(function(p) { return [x_g1(p), y1[p](d[p])]; }));
@@ -93,7 +99,7 @@ d3.csv("ds_salaries.csv").then(data => {
       .attr("y", -9)
       .text(function(d) { return d; })
       .style("fill", "black")
-  
+  */
   g1.append("text")
     .attr("x", (width / 2))             
     .attr("y", -25)
@@ -101,7 +107,7 @@ d3.csv("ds_salaries.csv").then(data => {
     .style("font-size", "14px") 
     .style("text-decoration", "underline")  
     .text("Overview of Data Scientist Work Aspects");
-  
+  /*
   
     function brushstart() {
       d3.event.sourceEvent.stopPropagation();
@@ -122,7 +128,94 @@ d3.csv("ds_salaries.csv").then(data => {
       svg.select('g[data-id="'+dimension+'"]').classed('selected', actives.indexOf(dimension) > -1);
     });
   }
-  
+   */
+  // Extract the list of dimensions and create a scale for each.
+  // x.domain(dimensions = Object.keys(data[0]).filter(function(d) {
+  //   return d != "name" && (y[d] = d3.scaleLinear()
+  //       .domain(d3.extent(data, function(p) { return +p[d]; }))
+  //       .range([parallelHeight, 0]));
+  // }));
+
+  // Add grey background lines for context.
+  g1//.append("g")
+      // .attr("class", "background")
+      .selectAll("myPath")
+      .data(data)
+      .join("path")
+      .attr("d",  path)
+      .style("fill", "none")
+      .style("stroke", "#ddd")
+    .style("opacity", 0.5)
+  // console.log(path)
+
+  // Add blue foreground lines for focus.
+  foreground = g1.append("g")
+      .attr("class", "foreground")
+      .selectAll("myPath")
+      .data(data)
+      .join("path")
+      .attr("d",  path)
+      .style("fill", "none")
+      .style("stroke", "#69b3a2")
+      .style("opacity", 0.5)
+
+  // Add a group element for each dimension.
+  var g = g1.selectAll(".dimension")
+      .data(dimensions)
+    .enter().append("g")
+      .attr("class", "dimension")
+      .attr("transform", function(d) { return "translate(" + x_g1(d) + ")"; });
+
+  // Add an axis and title.
+  g.append("g")
+      .attr("class", "axis")
+      .each(function(d) { d3.select(this).call(axis_g1.scale(y1[d])); })
+    .append("text")
+      .style("text-anchor", "middle")
+      .attr("y", -9)
+      .text(function(d) { return d; });
+
+  // Add and store a brush for each axis.
+  g.append("g")
+      .attr("class", "brush")
+      .each(function(d) { 
+          d3.select(this).call(y1[d].brush = d3.brushY()
+            .extent([[-10,0], [10,parallelHeight]])
+            .on("brush", brush)           
+            .on("end", brush)
+            )
+        })
+    .selectAll("rect")
+      .attr("x", -8)
+    .attr("width", 16);
+  // Returns the path for a given data point.
+function path(d) {
+  return line(dimensions.map(function(p) { return [x_g1(p), y1[p](d[p])]; }));
+}
+
+// Handles a brush event, toggling the display of foreground lines.
+function brush() {  
+  var actives = [];
+  svg.selectAll(".brush")
+    .filter(function(d) {
+          y1[d].brushSelectionValue = d3.brushSelection(this);
+          return d3.brushSelection(this);
+    })
+    .each(function(d) {
+        // Get extents of brush along each active selection axis (the Y axes)
+          actives.push({
+              dimension: d,
+              extent: d3.brushSelection(this).map(y1[d].invert)
+          });
+    });
+
+  // Update foreground to only display selected values
+  foreground.style("display", function(d) {
+      return actives.every(function(active) {
+          return active.extent[1] <= d[active.dimension] && d[active.dimension] <= active.extent[0];
+      }) ? null : "none";
+  });
+}
   // ----------------------------------------------------------------------------------
   // bar graph: average salary per experience level
   
