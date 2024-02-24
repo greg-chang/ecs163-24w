@@ -22,13 +22,14 @@ d3.csv("ds_salaries.csv").then(data => {
   
   const svg = d3.select("svg")
   // parallel plot
-  // animation: change axis order?
   // select only certain lines?
   
   const g1 = svg.append("g")
                 .attr("width", parallelWidth + parallelMargin.left + parallelMargin.right)
                 .attr("height", parallelHeight + parallelMargin.top + parallelMargin.bottom)
                 .attr("transform", `translate(${parallelMargin.left}, ${parallelMargin.top})`)
+                // .attr("class", "brush")
+                // .call(d3.brush().on("brush", brushed));
   // https://d3-graph-gallery.com/graph/parallel_basic.html
   // Extract the list of dimensions we want to keep in the plot. Keep all except the categoricals with too many unique values (>50).
   allDimensions = Object.keys(data[0])
@@ -56,14 +57,14 @@ d3.csv("ds_salaries.csv").then(data => {
   }
 
   // Build the X scale -> it find the best position for each Y axis
-  x_g2 = d3.scalePoint()
+  x_g1 = d3.scalePoint()
     .range([0, parallelWidth])
     .padding(1)
     .domain(dimensions);
 
   // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
   function path(d) {
-      return d3.line()(dimensions.map(function(p) { return [x_g2(p), y1[p](d[p])]; }));
+      return d3.line()(dimensions.map(function(p) { return [x_g1(p), y1[p](d[p])]; }));
   }  
 
   // Draw the lines
@@ -75,15 +76,16 @@ d3.csv("ds_salaries.csv").then(data => {
     .style("fill", "none")
     .style("stroke", "#69b3a2")
     .style("opacity", 0.5)
-
+    // .onmousehover(brush())
+    
   // Draw the axis:
   g1.selectAll("myAxis")
-    // For each dimension of the dataset I add a 'g' element:
+    // For each dimension of the dataset, add a 'g' element:
     .data(dimensions).enter()
     .append("g")
-    // I translate this element to its right position on the x axis
-    .attr("transform", function(d) { return "translate(" + x_g2(d) + ")"; })
-    // And I build the axis with the call function
+    // Translate this element to its right position on the x axis
+    .attr("transform", function(d) { return "translate(" + x_g1(d) + ")"; })
+    // Build the axis with the call function
     .each(function(d) { d3.select(this).call(d3.axisLeft().scale(y1[d])); })
     // Add axis title
     .append("text")
@@ -99,6 +101,27 @@ d3.csv("ds_salaries.csv").then(data => {
     .style("font-size", "14px") 
     .style("text-decoration", "underline")  
     .text("Overview of Data Scientist Work Aspects");
+  
+  
+    function brushstart() {
+      d3.event.sourceEvent.stopPropagation();
+    }
+    
+  // Handles a brush event, toggling the display of foreground lines.
+  function brush() {
+    var actives = dimensions.filter(function(p) { return !y[p].brush.empty(); }),
+        extents = actives.map(function(p) { return y[p].brush.extent(); });
+    foreground.style("display", function(d) {
+      return actives.every(function(p, i) {
+        return extents[i][0] <= d[p] && d[p] <= extents[i][1];
+      }) ? null : "none";
+    });
+    
+    // highlight brushed axes
+    allDimensions.forEach(function(dimension) {
+      svg.select('g[data-id="'+dimension+'"]').classed('selected', actives.indexOf(dimension) > -1);
+    });
+  }
   
   // ----------------------------------------------------------------------------------
   // bar graph: average salary per experience level
@@ -155,11 +178,12 @@ d3.csv("ds_salaries.csv").then(data => {
   
   // Y axis
   var y = d3.scaleBand()
-    .range([ 0, barHeight/3 ])
+    .range([0, barHeight / 3])
     .domain([...new Set(data.map(item => item['experience_level']))])
-    .padding(0.05);
+    .padding(0.05)
   
   g2.append("g")
+    .attr("class", "y_axis_g2")
     .call(d3.axisLeft(y))
     .attr("transform", "translate(" + barLeft + ',' + y_axis_start + ")")
   
@@ -196,39 +220,6 @@ d3.csv("ds_salaries.csv").then(data => {
     .style("text-decoration", "underline")  
     .text("Salary in USD");
   
-  var zoom = d3.zoom()
-    .scaleExtent([1, Infinity])
-    .translateExtent([[0, 0], [barWidth, barHeight]])
-    .extent([[0, 0], [barWidth, barHeight]])
-    .on("zoom", zoomed);
-  
-  // Call the zoom function on the g2 element
-  g2.call(zoom);
-  
-  // Define the zoomed function to handle zooming
-  function zoomed(event, d) {
-    let zoomedScale = event.transform.rescaleX(x_g2);
-    axis.scale(zoomedScale);
-    g2.call(axis);
-    g2.selectAll("rect")
-      .attr("x", function(d) { return newX(0); })
-      .attr("width", function(d) { return newX(d.average); });
-  }
-  // function zoom(g2) {
-  //   const extent = [[barLeft, barMargin.top], [barWidth - barMargin.right, barHeight - barMargin.top]];
-
-  //   g2.call(d3.zoom()
-  //       .scaleExtent([1, 8])
-  //       .translateExtent(extent)
-  //       .extent(extent)
-  //       .on("zoom", zoomed));
-
-  //   function zoomed(event) {
-  //     y.range([barMargin.left, barWidth - barMargin.right].map(d => event.transform.applyX(d)));
-  //     g2.selectAll("rect").attr("x", d => x(d.average)).attr("width", x.bandwidth());
-  //     g2.selectAll("x").call(x);
-  //   }
-  // }
   //-----------------------------------------------------------------------------------
   // add brush tooltip over data points
   // animate line stroke?
@@ -330,7 +321,7 @@ d3.csv("ds_salaries.csv").then(data => {
       tooltip.transition()
         .duration(200)
         .style("opacity", .9);
-      tooltip.html("Y-value: " + d3.format(",.2f")(d.average))
+      tooltip.html("Salary: " + d3.format(",.2f")(d.average))
         .style("left", (event.pageX + 10) + "px")
         .style("top", (event.pageY - 28) + "px");
       // console.log(event.pageX+ ', ' + event.pageY)
