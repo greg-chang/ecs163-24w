@@ -65,7 +65,7 @@ function createStar(data) {
     const margin = 25;
 
     const svg = d3.select("#plot2")
-        .attr("width", width + margin + 100)
+        .attr("width", width + margin)
         .attr("height", height + margin)
         .style("font", "10px arial")
 
@@ -170,10 +170,6 @@ function updateStar(data) {
         .x(d => d.x)
         .y(d => d.y)
         .curve(d3.curveLinearClosed)
-    const noLine = d3.line()
-        .x(width / 2)
-        .y(height / 2)
-        .curve(d3.curveLinearClosed)
 
     function getPathCoords(typeData) {
         let coordinates = [];
@@ -215,6 +211,8 @@ function updateStar(data) {
         },
         exit => {
             return exit
+                .transition()
+                .attr("transform", "scale(0.0)")
                 .remove();
         }
     )
@@ -226,40 +224,97 @@ function updateStar(data) {
     .attr("d", line)
     .transition()
     .attr("transform", "scale(1.0)")
-
-    console.log(line)
 }
 
 function createScatter(data) {
-    const margin = {top: 50, right: 150, bottom: 50, left: 75};
+    const margin = {top: 50, right: 75, bottom: 50, left: 75};
     const width = 300;
     const height = 275;
 
-    data = data.filter(d => {
-        if (selectedTypes.has(d.type))
-            return true;
-        else
-            return false;
-    });
+    const zoom = d3.zoom()
+      .scaleExtent([.5, 20])
+      .extent([[0, 0], [width, height]])
+      .on("zoom", zoomChart);
 
     const svg = d3.select("#plot3")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
+        .call(zoom)
         .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    const xAxis = d3.scaleLinear()
-        .domain([0, 300])
+    const x = d3.scaleLinear()
+        .domain([0, 500])
         .range([0, width])
-    svg.append("g")
+    const xAxis = svg.append("g")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(xAxis))
+        .call(d3.axisBottom(x))
 
-    const yAxis = d3.scaleLinear()
-        .domain([0, 300])
+    const y = d3.scaleLinear()
+        .domain([0, 500])
         .range([height, 0])
-    svg.append("g")
-        .call(d3.axisLeft(yAxis));
+    const yAxis = svg.append("g")
+        .call(d3.axisLeft(y));
+
+    svg.append("defs").append("SVG:clipPath")
+      .attr("id", "clip")
+      .append("SVG:rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("x", 0)
+      .attr("y", 0);
+
+    const scatter = svg.append("g")
+        .attr("clip-path", "url(#clip)")
+
+    function filterChart() {
+        filteredData = data.filter(d => {
+            if (selectedTypes.has(d.type))
+                return true;
+            else
+                return false;
+        });
+
+        scatter
+            .selectAll("circle")
+            .data(filteredData, d => { return d.name })
+            .join(
+                enter => {
+                    return enter
+                        .append("circle")
+                        .attr("r", 0.0);
+                },
+                update => {
+                    return update;
+                },
+                exit => {
+                    return exit 
+                        .transition()
+                        .attr("r", 0.0)
+                        .remove();
+                }
+            )
+            .attr("cx", d => { return x(d.totalAttack); } )
+            .attr("cy", d => { return y(d.totalDefense); } )
+            .style("fill", d => { return colorMap.get(d.type); })
+            .transition()
+            .attr("r", 4.0)
+
+            zoom.transform(svg, d3.zoomTransform(svg));
+    }
+
+    function zoomChart() {
+        const newX = d3.event.transform.rescaleX(x);
+        const newY = d3.event.transform.rescaleY(y);
+
+        xAxis.call(d3.axisBottom(newX))
+        yAxis.call(d3.axisLeft(newY))
+
+        scatter
+            .selectAll("circle")
+            .attr("cx", d => { return newX(d.totalAttack); } )
+            .attr("cy", d => { return newY(d.totalDefense); } )
+    }
 
     // X-Label
     svg.append("text")
@@ -280,57 +335,10 @@ function createScatter(data) {
         .style("font", "16px arial")
         .text("Total Defense (Defense + Sp.Defense)");
 
-    svg.append('g')
-        .attr("id", "scatterData");
+    return filterChart;
 }
 
-function updateScatterPlot(data) {
-    const width = 300;
-    const height = 275;
-
-    data = data.filter(d => {
-        if (selectedTypes.has(d.type))
-            return true;
-        else
-            return false;
-    });
-
-    const xAxis = d3.scaleLinear()
-        .domain([0, 300])
-        .range([0, width])
-
-    const yAxis = d3.scaleLinear()
-        .domain([0, 300])
-        .range([height, 0])
-
-    d3.select("#scatterData")
-        .selectAll("circle")
-        .data(data, d => { return d.name })
-        .join(
-            enter => {
-                return enter
-                    .append("circle")
-                    .attr("cx", d => { return xAxis(d.totalAttack); } )
-                    .attr("cy", d => { return yAxis(d.totalDefense); } )
-                    .style("fill", d => { return colorMap.get(d.type); })
-                    .attr("r", 0.0);
-            },
-            update => {
-                return update;
-            },
-            exit => {
-                return exit 
-                    .transition()
-                    .attr("r", 0.0)
-                    .remove();
-            }
-        )
-        .transition()
-        .attr("r", 4.0)
-}
-
-
-function createBarChart(data) {
+function createBarChart(data, updateScatterCallback) {
     const margin = {top: 75, right: 50, bottom: 75, left: 100};
     const width = 550;
     const height = 550;
@@ -419,16 +427,36 @@ function createBarChart(data) {
             selectedTypes.delete(d.type);
             d3.select(this)
                 .transition()
-                .attr("opacity", "0.1")
+                .duration(60)
+                .attr("opacity", "0.5")
         }
         else {
             selectedTypes.add(d.type);
             d3.select(this)
                 .transition()
+                .duration(60)
                 .attr("opacity", "1.0")
         }
-        updateScatterPlot(data);
+        updateScatterCallback();
         updateStar(data);
+    });
+
+    bars.on('mouseover', function (d) {
+        if (!selectedTypes.has(d.type)) {
+            d3.select(this)
+                .transition()
+                .duration(30)
+                .attr("opacity", "0.5")
+        }
+    });
+
+    bars.on('mouseout', function (d) {
+        if (!selectedTypes.has(d.type)) {
+            d3.select(this)
+                .transition()
+                .duration(30)
+                .attr("opacity", "0.1")
+        }
     });
 }
 
@@ -454,8 +482,8 @@ function constructGraphs() {
             d.totalDefense = d.defense + d.spDefense 
         });
 
-        createBarChart(filteredData);
-        createScatter(filteredData);
+        const updateScatterCallback = createScatter(filteredData);
+        createBarChart(filteredData, updateScatterCallback);
         createStar(filteredData);
     });
 }
