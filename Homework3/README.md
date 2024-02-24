@@ -1,6 +1,6 @@
 # Changes
-- Tooltip and animation has been added for the line plot
-- An attempt was made at implementing a selectable parallel plot using `d3.brush()`. It does not function.
+- Tooltip will show up by hovering over the circles and animation has been added for the line plot.
+- The parallel plot has selection interaction now. Please note that selection may lag, as there are a total of a few thousand paths drawn.
 
 # Homework 3:  Visualization Dashboard Pt 2 (Interactivity)
 For Homework 3, you will be extending your Homework 2 dashboard to include interactions and animated transitions. **You may start fresh, i.e., selecting different datasets from HW2 or designing different visualizations.**
