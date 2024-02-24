@@ -1,0 +1,1 @@
+My first visualization is meant to be an overview of the data. In homework 2, I dedicated by overview to the labels on the cosmetics. However, while it is important for distinguishing between certain products, I decided for my overview to be on price.
