@@ -17,7 +17,7 @@ let teamMargin = {top: 10, right: 30, bottom: 30, left: 60},
     teamWidth = width - teamMargin.left - teamMargin.right,
     teamHeight = height-450 - teamMargin.top - teamMargin.bottom;
 
-
+//Filter  by column
 d3.csv("players.csv").then(rawData =>{
     console.log("rawData", rawData);
     
