@@ -75,15 +75,12 @@ function groupByCountry(validIncidents){
     var countries = {}
 
     validIncidents.forEach(incident => {
-        console.log(incident.country);
         if (!countries[incident.country]){
             countries[incident.country] = 1;
         } else {
             countries[incident.country] += 1;
         }
     })
-
-    console.log("COUNTRIES: ", countries);
 
     return countries;
 }
@@ -231,7 +228,6 @@ function updateParallelPlot(selectedIncidents, svg) {
             })])
             .range([parallelHeight, 0])
         }
-
     }
 
     x = d3.scalePoint()
@@ -239,15 +235,15 @@ function updateParallelPlot(selectedIncidents, svg) {
         .domain(dimensions);
 
     const highlight = function(event, d) {
-        selected_country = d.country
+        selected_country = reformatCountryName(d.country);
 
         parallelSVG.selectAll(".line")
             .transition().duration(200)
             .style("stroke", "lightgrey")
-            .style("opacity", 0.2)
+            .style("opacity", 0)
         parallelSVG.selectAll("." + selected_country)
             .transition().duration(200)
-            .style("stroke", color(selected_country))
+            .style("stroke", color(d.country))
             .style("opacity", 1)
     }
 
@@ -257,7 +253,7 @@ function updateParallelPlot(selectedIncidents, svg) {
             .style("stroke", function(d) {
                 return(color(d.country))
             })
-            .style("opacity", 1)
+            .style("opacity", 0.5)
     }
     
     function path(d) {
@@ -270,7 +266,8 @@ function updateParallelPlot(selectedIncidents, svg) {
         .data(selectedIncidents)
         .join("path")
         .attr("class", function (d) {
-            return "line " + d.country
+            var reformattedCountryName = reformatCountryName(d.country);
+            return "line " + reformattedCountryName
         })
         .attr("d", path)
         .style("fill", "none")
