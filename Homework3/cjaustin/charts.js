@@ -60,6 +60,7 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
 
     let mapAggregate = new Object()
     let pieAggregate = new Object()
+    let animAggregate = new Object()
     let streamAggregate = new Object()
 
     data.forEach((d) => {
@@ -78,6 +79,17 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
             pieAggregate[d.region_txt] += +d.nkill
         }
 
+        // For pie animation count deaths per region per year
+        let year = +d.iyear
+        if (animAggregate[year] === undefined) {
+            animAggregate[year] = new Object()
+            animAggregate[year][d.region_txt] = +d.nkill
+        } else if (animAggregate[year][d.region_txt] === undefined) {
+            animAggregate[year][d.region_txt] = +d.nkill
+        } else {
+            animAggregate[year][d.region_txt] += +d.nkill
+        }
+
         // For stream count instances per region per unit time
         let date = new Date(+d.iyear, +d.imonth)
         if (streamAggregate[date] === undefined) {
@@ -93,9 +105,10 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
     let mapData = Object.keys(mapAggregate).map((c) => {return {country: c, instances: mapAggregate[c]}})
     let regions = Object.keys(pieAggregate)
     let pieData = regions.map((r) => {return {region: r, deaths: pieAggregate[r]}})
+    Object.keys(animAggregate).forEach((y) => {animAggregate[y] = regions.map((r) => {return {region: r, deaths: animAggregate[y][r] || 0}})})
     let streamData = Object.keys(streamAggregate).map((d) => 
         Object.keys(streamAggregate[d]).map((r) => {return {date: new Date(d), region: r, instances: streamAggregate[d][r]}})).flat()
-
+    
     // Remove loading text
     d3.select("#loadText").remove()
 
@@ -233,7 +246,7 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
                 `translate(${mapDim.left + (mapDim.width / 2)},${mapDim.top + (0.75 * mapDim.marginY)})`)
             .attr("text-anchor", "middle")
             .text("Hover to see exact attacks for each country")
-            .style("font-size", "14px")
+            .style("font-size", "10px")
     }).catch((err) => {
 
         console.log(err)
@@ -250,16 +263,15 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
         pieDim.width - (2 * pieDim.marginX)) / 3
     let pie = d3.pie()
         .value((d) => d.deaths)
+        .sort((a, b) => d3.ascending(a.region, b.region))
     let path = d3.arc()
         .outerRadius(radius)
         .innerRadius(0)
-    let label = d3.arc()
-        .outerRadius(radius)
-        .innerRadius(radius)
 
     svg.append("g")
             .attr("transform", 
             `translate(${pieDim.left + (pieDim.width / 2)},${pieDim.top + (pieDim.height / 2)})`)
+            .attr("class", "pieG")
         .selectAll(".arc")
         .data(pie(pieData))
         .enter()
@@ -268,6 +280,119 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
         .append("path")
             .attr("d", path)
             .attr("fill", (d) => colours(d.data.region))
+    
+    // Year by year animation
+    svg.append("text")
+        .attr("class", "yearCount")
+        .attr("transform", 
+            `translate(${pieDim.left + (pieDim.width / 2) - 100},${pieDim.top + (pieDim.height / 2) + radius + pieDim.marginY})`)
+        .attr("text-anchor", "middle")
+        .text("1970")
+        .style("font-size", "18px")
+        .style("opacity", 0)
+
+    let playAnimation = () => {
+        d3.select(".d3Button")
+            .transition()
+            .duration(100)
+            .attr("fill", "gray")
+            .transition()
+            .duration(100)
+            .attr("fill", "white")
+        
+        let textAnim = svg.select(".yearCount")
+            .transition()
+            .duration(50)
+            .style("opacity", 1)
+        
+        let counter = 0
+        for (let i = 1970; i <= 2017; i++) {
+            let thisDataset = animAggregate[i]
+            if (thisDataset != undefined) {
+                textAnim.transition()
+                    .duration(500)
+                    .delay(counter * 1000)
+                    .text(i)
+
+                let radius = Math.min(pieDim.height - (2 * pieDim.marginY), 
+                pieDim.width - (2 * pieDim.marginX)) / 3
+                let pie = d3.pie()
+                    .value((d) => d.deaths)
+                    .sort((a, b) => d3.ascending(a.region, b.region))
+                let path = d3.arc()
+                    .outerRadius(radius)
+                    .innerRadius(0)
+
+                let u = svg.append("g")
+                        .attr("transform", 
+                        `translate(${pieDim.left + (pieDim.width / 2)},${pieDim.top + (pieDim.height / 2)})`)
+                        .attr("class", "pieG")
+                    .selectAll(".arc")
+                    .data(pie(thisDataset))
+
+                u.enter()
+                    .append("g")
+                        .attr("class", "arc")
+                    .append("path")
+                        .merge(u)
+                        .transition()
+                        .duration(500)
+                        .delay(counter * 1000)
+                        .attr("d", path)
+                        .attr("fill", (d) => colours(d.data.region))
+                u.exit().remove()
+                counter++
+            }
+        }
+
+        textAnim.transition()
+            .duration(50)
+            .delay(counter * 1000)
+            .style("opacity", 0)
+        
+        let radius = Math.min(pieDim.height - (2 * pieDim.marginY), 
+            pieDim.width - (2 * pieDim.marginX)) / 3
+        let pie = d3.pie()
+            .value((d) => d.deaths)
+            .sort((a, b) => d3.ascending(a.region, b.region))
+        let path = d3.arc()
+            .outerRadius(radius)
+            .innerRadius(0)
+    
+        let u = svg.append("g")
+                .attr("transform", 
+                `translate(${pieDim.left + (pieDim.width / 2)},${pieDim.top + (pieDim.height / 2)})`)
+                .attr("class", "pieG")
+            .selectAll(".arc")
+            .data(pie(pieData))
+        u.enter()
+            .append("g")
+                .attr("class", "arc")
+            .append("path")
+                .merge(u)
+                .transition()
+                .duration(500)
+                .delay(counter * 1000)
+                .attr("d", path)
+                .attr("fill", (d) => colours(d.data.region))
+    }
+
+    svg.append("rect")
+        .attr("class", "d3Button")
+        .attr("x", pieDim.left + (pieDim.width / 2) - 30)
+        .attr("y", pieDim.top + (pieDim.height / 2) + radius + pieDim.marginY - 20)
+        .attr("width", 60)
+        .attr("height", 30)
+        .attr("stroke", "black")
+        .attr("fill", "white")
+        .on("click", playAnimation)
+    svg.append("text")
+        .attr("transform", 
+            `translate(${pieDim.left + (pieDim.width / 2)},${pieDim.top + (pieDim.height / 2) + radius + pieDim.marginY})`)
+        .attr("text-anchor", "middle")
+        .text("Play")
+        .style("font-size", "14px")
+        .on("click", playAnimation)
     
     // Add title and interaction tip
     svg.append("text")
@@ -283,7 +408,7 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
         .attr("transform", 
             `translate(${pieDim.left + (pieDim.width / 2)},${pieDim.top + (pieDim.height / 2) - radius - (0.5 * pieDim.marginY)})`)
         .attr("text-anchor", "middle")
-        .text("Press 'Play' to see how regional deaths have changed each year")
+        .text("Press 'Play' to animate how regional deaths have changed each year")
         .style("font-size", "10px")
     
     // Stream
@@ -357,11 +482,8 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
     
     // Add brush
     let reframeChart = (event) => {
-        console.log("brushed")
         let extent = event.selection
-        if (!extent) {
-            
-        } else {
+        if (extent) {
             x.domain([x.invert(extent[0]), x.invert(extent[1])])
             streamG.select(".brush")
                 .call(brush.move, null)
@@ -377,7 +499,6 @@ d3.csv("https://media.githubusercontent.com/media/cjaustin-ucd/csvHost/main/glob
     }
 
     let resetStream = (event) => {
-        console.log("reset")
         x.domain(d3.extent(streamData, (d) => d.date))
         xAxis.transition()
             .duration(200)
