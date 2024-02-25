@@ -1,0 +1,94 @@
+---
+title: "hw2_ecs163 data process"
+date: "2024-02-08"
+output: pdf_document
+---
+Prepare for graph 1
+```{r}
+
+data <- read.csv("/Users/keyikang/Desktop/163hw2/smh.csv")
+smh <- read.csv("/Users/keyikang/Desktop/163hw2/smh.csv")
+illnessnum <- rep(0,4)
+
+for (i in 1:nrow(smh)) {
+ 
+num <- sum(smh[i, c("Do.you.have.Depression.", "Do.you.have.Anxiety.", "Do.you.have.Panic.attack.")] == "Yes")
+    
+illnessnum[num + 1] <- illnessnum[num + 1] + 1
+
+}
+
+print(illnessnum)
+
+```
+
+Prepare for Graph 2
+```{r}
+# create a matrix
+#row 1 is major
+#row 2 is cgpa
+#row 3 is any mental illness or not (0 for none, 1 for 1 or more)
+
+smh$What.is.your.course. <- tolower(smh$What.is.your.course.)
+
+matrix1 <- matrix(nrow = nrow(smh), ncol = 3)
+
+cgpa_values <- c("0 - 1.99" = 1, "2.00 - 2.49" = 2, "2.50 - 2.99" = 3, "3.00 - 3.49" = 4, "3.50 - 4.00" = 5)
+
+for (i in 1:nrow(smh)) {
+  matrix1[i, 1] <- smh[i, "What.is.your.course."]
+  matrix1[i, 2] <- cgpa_values[smh[i, "What.is.your.CGPA."]]
+  matrix1[i, 3] <- ifelse(smh[i, "Do.you.have.Depression."] == "Yes" | 
+                          smh[i, "Do.you.have.Anxiety."] == "Yes" | 
+                          smh[i, "Do.you.have.Panic.attack."] == "Yes", 1,0)
+}
+matrix1[7,2]<- 5
+
+matrix1_df <- as.data.frame(matrix1)
+print(matrix1_df)
+
+```
+
+Prepare for graph 3
+```{r}
+
+
+
+# Extracting relevant columns
+gender <- smh$Choose.your.gender
+age <- smh$Age
+marital_status <- smh$Marital.status
+year_of_study <- smh$Your.current.year.of.Study
+
+cgpa_values <- c("0 - 1.99" = 1, "2.00 - 2.49" = 2, "2.50 - 2.99" = 3, "3.00 - 3.49" = 4, "3.50 - 4.00" = 5)
+cgpa <- smh$What.is.your.CGPA.
+cgpa_numeric <- cgpa_values[as.character(cgpa)]
+
+course <- smh$What.is.your.course.
+depression <- smh$Do.you.have.Depression.
+anxiety <- smh$Do.you.have.Anxiety.
+panic_attack <- smh$Do.you.have.Panic.attack.
+treatment <- smh$Did.you.seek.any.specialist.for.a.treatment.
+
+
+illness_count <- rowSums(smh[,c("Do.you.have.Depression.","Do.you.have.Anxiety.", "Do.you.have.Panic.attack.")] == "Yes")
+
+cgpa_numeric[7]=5
+
+
+
+graph3_data <- data.frame(
+  Gender = gender,
+  Age = age,
+  Marital_Status = marital_status,
+  Year_of_Study = year_of_study,
+  CGPA = cgpa_numeric,
+  Course = course,
+  Illness_Count = illness_count,
+  Treatment = treatment
+)
+
+
+print(graph3_data)
+
+```
