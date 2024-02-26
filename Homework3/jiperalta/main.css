@@ -1,0 +1,33 @@
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    font-family: arial;
+    font-size: 24px;
+    text-align: center;
+    width: 100%;
+}
+
+.separator-vertical {
+    height: 10px;
+    width: 100%;
+}
+.separator-horizontal {
+    width: 10px;
+    height: 100%;
+}
+
+.fill {
+    width: 100%;
+}
+
+.border {
+    border: 1px solid grey;
+}

@@ -1,0 +1,259 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <title>HW 3 - Jacqueline Acosta</title>
+    <style>
+        .dot {
+            fill: rgb(132, 180, 220);
+            cursor: pointer; 
+        }
+
+        .dot.selected {
+            fill: rgb(218, 39, 170); 
+        }
+
+        .mainDiv {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            max-width: 100vw;
+            height: auto; 
+            box-sizing: border-box;
+        }
+
+        body {
+            max-width: 100vw;
+            margin: 0; 
+            padding: 0; 
+        }
+    
+    </style>
+</head>
+<body>
+    <div id="parallel-coordinates" class="mainDiv" style=" width: 800px; height: 400px;">
+    <div>
+    <svg id="scatterplot" width="800" height="375"></svg>
+    <svg id="histogram" width="800" height="400"></svg>
+    </div>
+
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        d3.csv("cosmetics.csv").then(function(data) {
+            data.forEach(function(d) {
+                d.Price = +d.Price;
+            });
+
+            var scatterMargin = {top: 60, right: 60, bottom: 60, left: 60}, 
+                scatterWidth = 550,
+                scatterHeight = 200;
+
+            var xScale = d3.scaleBand()
+                .range([0, scatterWidth])
+                .domain(data.map(function(d) { return d.Label; }))
+                .padding(0.1);
+
+            var yScale = d3.scaleLinear()
+                .range([scatterHeight, 0])
+                .domain([0, d3.max(data, function(d) { return d.Price; })]);
+
+            var scatterSvg = d3.select("#scatterplot")
+                .append("g")
+                .attr("transform", "translate(" + scatterMargin.left + "," + scatterMargin.top + ")");
+
+            scatterSvg.selectAll(".dot")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("cx", function(d) { return xScale(d.Label) + xScale.bandwidth() / 2; })
+                .attr("cy", function(d) { return yScale(d.Price); })
+                .attr("r", 5)
+                .on("click", function(d) {
+                    d3.select(this).classed("selected", !d3.select(this).classed("selected"));
+                    updateHistogram();
+                });
+
+            scatterSvg.append("g")
+                .attr("transform", "translate(0," + scatterHeight + ")")
+                .call(d3.axisBottom(xScale));
+
+            scatterSvg.append("g")
+                .call(d3.axisLeft(yScale));
+
+            scatterSvg.append("text")
+                .attr("transform", "translate(" + (scatterWidth / 2) + " ," + (scatterHeight + scatterMargin.top + 10) + ")")
+                .style("text-anchor", "middle")
+				.style("font-size", "18px")
+                .text("Type of Cosmetic");
+
+            scatterSvg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - scatterMargin.left)
+                .attr("x",0 - (scatterHeight / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+				.style("font-size", "18px")
+                .text("Price  ($)");
+			scatterSvg.append("text")
+            	.attr("x", (scatterWidth / 2))
+                .attr("y", 0 - (scatterMargin.top / 2))
+                .attr("text-anchor", "middle")
+                .style("font-size", "24px")
+				.style("Fill", "black")
+                .style("font-weight", "bold")
+                .text("Price of Different Types of Cosmetics");
+            
+            var histMargin = {top: 35, right: 60, bottom: 60, left: 60}, 
+                histWidth = 550,
+                histHeight = 200;
+
+            var xScaleHist = d3.scaleLinear()
+                .domain([0, d3.max(data, function(d) { return d.Price; })])
+                .range([0, histWidth]);
+
+            var histogram = d3.histogram()
+                .value(function(d) { return d.Price; })
+                .domain(xScaleHist.domain())
+                .thresholds(xScaleHist.ticks(20)); 
+
+            var bins = histogram(data);
+
+            var yScaleHist = d3.scaleLinear()
+                .domain([0, d3.max(bins, function(d) { return d.length; })])
+                .range([histHeight, 0]);
+
+            var histSvg = d3.select("#histogram")
+                .append("g")
+                .attr("transform", "translate(" + histMargin.left + "," + (histMargin.top) + ")"); 
+            var bar = histSvg.selectAll(".bar")
+                .data(bins)
+                .enter().append("g")
+                .attr("class", "bar")
+                .attr("transform", function(d) { return "translate(" + xScaleHist(d.x0) + "," + yScaleHist(d.length) + ")"; });
+
+            bar.append("rect")
+                .attr("x", 1)
+                .attr("width", xScaleHist(bins[0].x1) - xScaleHist(bins[0].x0) - 1)
+                .style("Fill", "lightpink")
+                .attr("height", function(d) { return histHeight - yScaleHist(d.length); });
+
+            histSvg.append("g")
+                .attr("transform", "translate(0," + histHeight + ")")
+                .call(d3.axisBottom(xScaleHist));
+
+            histSvg.append("g")
+                .call(d3.axisLeft(yScaleHist));
+
+            histSvg.append("text")
+                .attr("transform", "translate(" + (histWidth / 2) + " ," + (histHeight + histMargin.top + 10) + ")")
+                .style("text-anchor", "middle")
+                .text("Price  ($)");
+
+            histSvg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - histMargin.left)
+                .attr("x",0 - (histHeight / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Frequency");
+
+            histSvg.append("text")
+                .attr("x", (histWidth / 2))
+                .attr("y", 0 - (histMargin.top / 2))
+                .attr("text-anchor", "middle")
+                .style("font-size", "24px")
+                .style("Fill", "black")
+                .style("font-weight", "bold")
+                .text("Price Distribution of Cosmetics");
+
+            function updateHistogram() {
+                var selectedData = data.filter(function(d) {
+                    return d3.select("#scatterplot").selectAll(".dot.selected").data().indexOf(d) !== -1;
+                });
+
+                var bins = histogram(selectedData);
+
+                yScaleHist.domain([0, d3.max(bins, function(d) { return d.length; })]);
+
+                bar = histSvg.selectAll(".bar")
+                    .data(bins);
+
+                bar.exit().remove();
+
+                bar.enter().append("g")
+                    .attr("class", "bar")
+                    .attr("transform", function(d) { return "translate(" + xScaleHist(d.x0) + "," + yScaleHist(d.length) + ")"; })
+                    .append("rect")
+                    .attr("x", 1)
+                    .attr("width", xScaleHist(bins[0].x1) - xScaleHist(bins[0].x0) - 1)
+                    .style("Fill", "lightpink")
+                    .attr("height", function(d) { return histHeight - yScaleHist(d.length); });
+
+                bar.transition()
+                    .attr("transform", function(d) { return "translate(" + xScaleHist(d.x0) + "," + yScaleHist(d.length) + ")"; })
+                    .select("rect")
+                    .attr("height", function(d) { return histHeight - yScaleHist(d.length); });
+            }
+
+            // Parallel Coordinates 
+            var margin = {top: 30, right: 10, bottom: 10, left: 10},
+                width = 800 - margin.left - margin.right,
+                height = 400 - margin.top - margin.bottom;
+
+            
+            var svg = d3.select("#parallel-coordinates").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            var dimensions = d3.keys(data[0]).filter(function(d) { return d !== "Brand" && d !== "Label" && d !== "Rank"; });
+
+            var x = d3.scalePoint()
+                .range([0, width])
+                .padding(1)
+                .domain(dimensions);
+
+            var y = {};
+
+            dimensions.forEach(function(d) {
+                y[d] = d3.scaleLinear()
+                    .domain(d3.extent(data, function(p) { return +p[d]; }))
+                    .range([height, 0]);
+            });
+
+            var line = d3.line()
+                .defined(function(d) { return !isNaN(d[1]); });
+
+            var path = svg.selectAll(".parallel-coordinates-path")
+                .data(data)
+                .enter().append("path")
+                .attr("class", "parallel-coordinates-path")
+                .attr("d", path)
+                .style("stroke", function(d) { return "steelblue"; })
+                .style("stroke-opacity", 0.4)
+                .style("fill", "none");
+
+            function path(d) {
+                return line(dimensions.map(function(p) { return [x(p), y[p](d[p])]; }));
+            }
+
+            svg.selectAll(".parallel-coordinates-axis")
+                .data(dimensions)
+                .enter().append("g")
+                .attr("class", "parallel-coordinates-axis")
+                .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+                .each(function(d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
+                .append("text")
+                .style("text-anchor", "middle")
+                .attr("y", -9)
+                
+                .text(function(d) { return d; });
+
+       
+        });
+    </script>
+    </div>
+</body>
+</html>

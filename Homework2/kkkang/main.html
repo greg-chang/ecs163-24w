@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distribution of Mental Disorders in Students</title>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon">
+
+    <style>
+    #container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      #graph3 {
+        width: 800px;
+        height: 400px;
+        position: fixed;
+        right: 150px;
+        bottom: 300px;
+      }
+      
+      #graph1 {
+        width: 500px;
+        height: 300px; 
+        position: fixed;
+        top:5px;
+        left:5px;
+        }
+
+      #graph2 {
+            width: 600px;
+            height: 200px; 
+            position: fixed;
+            bottom: 330px;
+            left: 5px;
+        }
+
+    </style>
+
+</head>
+<body>
+    <div id="container">
+        <div id="graph3"></div>
+        <div id="graph1"></div>
+        <div id="graph2"></div>
+      </div>
+
+    <script>
+        // graph 1
+        const data1 = [37, 36, 18, 10];
+        const categories1 = ["No Mental Disorder", "One Mental Disorder", "Two Mental Disorders", "Three Mental Disorders"];
+
+        const margin1 = { top: 30, right: 30, bottom: 50, left: 50 };
+        const width1 = 500 - margin1.left - margin1.right;
+        const height1 = 300 - margin1.top - margin1.bottom;
+
+
+        const svg1 = d3.select("#graph1")
+            .append("svg")
+            .attr("width", width1 + margin1.left + margin1.right)
+            .attr("height", height1 + margin1.top + margin1.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin1.left}, ${margin1.top})`);
+
+        //axis scales
+        const x = d3.scaleBand()
+            .domain(categories1)
+            .range([0, width1])
+            .padding(0.1);
+
+        const y = d3.scaleLinear()
+            .domain([0, d3.max(data1)])
+            .nice()
+            .range([height1, 0]);
+
+        // Function to determine fill color based on data value
+        const fillColor = (d, i) => {
+            switch (i) {
+                case 0: return "green";
+                case 1: return "lightcoral";
+                case 2: return "red";
+                case 3: return "darkred";
+                default: return "gray"; // Default color
+            }
+        };
+
+        // plot axis
+        svg1.append("g")
+            .attr("transform", `translate(0, ${height1})`)
+            .call(d3.axisBottom(x));
+
+        svg1.append("g")
+            .call(d3.axisLeft(y));
+
+        // plot bar
+        svg1.selectAll(".bar")
+            .data(data1)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", (d, i) => x(categories1[i]))
+            .attr("y", d => y(d))
+            .attr("width", 90)
+            .attr("height", d => height1 - y(d))
+            .style("fill", (d, i) => fillColor(d, i));
+
+        // title
+        svg1.append("text")
+            .attr("x", (width1 / 2))
+            .attr("y",0 - (margin1.top / 2))
+            .attr("text-anchor", "middle")
+            .style("font-size", "20px")
+            .style("font-weight", "bold")
+            .text("Distribution of Mental Disorders in Students");
+
+        //axis label
+        svg1.append("text")
+            .attr("x", width1 / 2)
+            .attr("y", height1 + margin1.bottom)
+            .attr("text-anchor", "middle")
+         //   .style("font-weight", "bold")
+            .text("Number of Mental Disorders");
+
+        
+        svg1.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("x", 0 - (height1 / 2))
+            .attr("y", 0 - margin1.left)
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+          //  .style("font-weight", "bold")
+            .text("Number of Students");
+
+      // legend
+      const legend1 = svg1.append("g")
+            .attr("transform", `translate(${width1 - 120}, ${margin1.top / 2})`);
+
+        legend1.selectAll("rect")
+            .data(categories1)
+            .enter()
+            .append("rect")
+            .attr("x", -5)
+            .attr("y", (d, i) => i * 20)
+            .attr("width", 10)
+            .attr("height", 10)
+            .style("fill", (d, i) => fillColor(null, i)); 
+
+        legend1.selectAll("text")
+            .data(categories1)
+            .enter()
+            .append("text")
+            .attr("x", 15)
+            .attr("y", (d, i) => i * 20 + 9)
+            .style("font-size", "12px")
+            .text(d => d);
+
+// graph2
+    const data =  [ { major: "engineering", cgpa: 4, disorder: 1 },{ major: "islamic education", cgpa: 4, disorder: 1 },{ major: "bit", cgpa: 4, disorder: 1 },
+                    { major: "laws", cgpa: 4, disorder: 1 },{ major: "mathemathics", cgpa: 4, disorder: 0 },{ major: "engineering", cgpa: 5, disorder: 1 },
+                    { major: "pendidikan islam", cgpa: 5, disorder: 1 }, { major: "bcs", cgpa: 5, disorder: 1 }, { major: "human resources", cgpa: 3, disorder: 0 },{ major: "irkhs", cgpa: 5, disorder: 1 },
+                    { major: "psychology", cgpa: 5, disorder: 0 }, { major: "engineering", cgpa: 5, disorder: 1 },{ major: "bcs", cgpa: 4, disorder: 1 },{ major: "engineering", cgpa: 4, disorder: 0 },{ major: "kenms", cgpa: 5, disorder: 1 },
+                    { major: "bcs", cgpa: 5, disorder: 0 },{ major: "accounting", cgpa: 4, disorder: 0 },{ major: "enm", cgpa: 4, disorder: 1 },
+                    { major: "bit", cgpa: 5, disorder: 1 }, { major: "marine science", cgpa: 5, disorder: 1 },{ major: "engineering", cgpa: 4, disorder: 1 },
+                    { major: "koe", cgpa: 4, disorder: 0 }, { major: "bcs", cgpa: 5, disorder: 0 }, { major: "engineering", cgpa: 4, disorder: 0 },
+                    { major: "bcs", cgpa: 5, disorder: 1 }, { major: "banking studies", cgpa: 5, disorder: 0 }, { major: "engineering", cgpa: 5, disorder: 0 },
+                    { major: "engineering", cgpa: 4, disorder: 1 },{ major: "bit", cgpa: 5, disorder: 1 }, { major: "bcs", cgpa: 5, disorder: 0 }, { major: "business administration", cgpa: 4, disorder: 0 },
+                    { major: "bcs", cgpa: 4, disorder: 0 },{ major: "bcs", cgpa: 5, disorder: 1 },{ major: "bcs", cgpa: 5, disorder: 1 }, { major: "bit", cgpa: 4, disorder: 1 }, { major: "engineering", cgpa: 2, disorder: 0 },
+                    { major: "law", cgpa: 4, disorder: 1 },{ major: "bit", cgpa: 3, disorder: 1 },{ major: "kirkhs", cgpa: 5, disorder: 0 },
+                    { major: "engineering", cgpa: 3, disorder: 1 },{ major: "bit", cgpa: 4, disorder: 1 },{ major: "engineering", cgpa: 5, disorder: 0 },
+                    { major: "usuluddin", cgpa: 4, disorder: 1 }, { major: "bit", cgpa: 1, disorder: 0 }, { major: "taasl", cgpa: 5, disorder: 1 },{ major: "bcs", cgpa: 5, disorder: 1 },
+                    { major: "engineering", cgpa: 5, disorder: 1 }, { major: "engine", cgpa: 5, disorder: 0 }, { major: "bcs", cgpa: 4, disorder: 1 },
+                    { major: "bcs", cgpa: 5, disorder: 1 }, { major: "ala", cgpa: 3, disorder: 1 }, { major: "bcs", cgpa: 5, disorder: 1 },
+                    { major: "biomedical science", cgpa: 4, disorder: 0 }, { major: "koe", cgpa: 4, disorder: 1 },{ major: "bcs", cgpa: 5, disorder: 1 },
+                    { major: "bcs", cgpa: 4, disorder: 0 },  { major: "kirkhs", cgpa: 5, disorder: 0 },{ major: "benl", cgpa: 4, disorder: 1 },
+                    { major: "bcs", cgpa: 5, disorder: 0 }, { major: "benl", cgpa: 4, disorder: 0 },{ major: "it", cgpa: 4, disorder: 1 },{ major: "bcs", cgpa: 5, disorder: 0 }, { major: "cts", cgpa: 5, disorder: 1 }, { major: "engin", cgpa: 5, disorder: 1 },
+                    { major: "engine", cgpa: 5, disorder: 0 }, { major: "econs", cgpa: 5, disorder: 1 },{ major: "koe", cgpa: 4, disorder: 1 },{ major: "mhsc", cgpa: 4, disorder: 1 }, { major: "malcom", cgpa: 5, disorder: 1 },{ major: "kop", cgpa: 4, disorder: 1 },
+                    { major: "biomedical science", cgpa: 4, disorder: 0 },  { major: "laws", cgpa: 5, disorder: 1 },  { major: "bit", cgpa: 4, disorder: 1 },
+                    { major: "biomedical science", cgpa: 1, disorder: 0 },  { major: "bit", cgpa: 5, disorder: 1 },{ major: "koe", cgpa: 5, disorder: 1 },
+                    { major: "engineering", cgpa: 4, disorder: 1 }, { major: "human sciences", cgpa: 4, disorder: 1 }, { major: "biotechnology", cgpa: 1, disorder: 0 }, { major: "engineering", cgpa: 5, disorder: 0 },
+                    { major: "communication", cgpa: 5, disorder: 1 },  { major: "diploma nursing", cgpa: 5, disorder: 0 },{ major: "engineering", cgpa: 4, disorder: 1 }, { major: "pendidikan islam", cgpa: 4, disorder: 0 }, { major: "radiography", cgpa: 4, disorder: 0 },
+                    { major: "psychology", cgpa: 5, disorder: 1 }, { major: "fiqh fatwa", cgpa: 4, disorder: 0 },{ major: "psychology", cgpa: 5, disorder: 1 },
+                    { major: "bit", cgpa: 4, disorder: 1 }, { major: "engineering", cgpa: 2, disorder: 1 }, { major: "diploma tesl", cgpa: 5, disorder: 1 },{ major: "koe", cgpa: 4, disorder: 1 },
+                    { major: "koe", cgpa: 4, disorder: 1 }, { major: "benl", cgpa: 4, disorder: 1 }, { major: "fiqh", cgpa: 1, disorder: 1 },
+                    { major: "islamic education", cgpa: 5, disorder: 0 }, { major: "bcs", cgpa: 5, disorder: 1 }, { major: "engineering", cgpa: 4, disorder: 1 },
+                    { major: "nursing", cgpa: 5, disorder: 1 }, { major: "pendidikan islam", cgpa: 5, disorder: 0 }, { major: "biomedical science", cgpa: 4, disorder: 0 }
+                    ];
+
+
+// graph starts here
+        const margin = { top: 100, right: 50, bottom: 120, left: 150 };
+        const width = 550 - margin.left - margin.right;
+        const height = 600 - margin.top - margin.bottom;
+
+        const svg = d3.select("#graph2").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+
+        const cgpaRanges = { 1: "0 - 1.99", 2: "2.00 - 2.49", 3: "2.50 - 2.99", 4: "3.00 - 3.49", 5: "3.50 - 4.00" };
+
+        //axis scale
+        const xScale = d3.scaleLinear()
+            .domain([1, 5])
+            .range([0, width]);
+
+        const yScale = d3.scaleBand()
+            .domain(data.map(d => d.major))
+            .range([0, height])
+            .padding(0.1);
+
+        // plot
+        svg.selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("cx", d => xScale(d.cgpa))
+            .attr("cy", d => yScale(d.major) + yScale.bandwidth() / 2)
+            .attr("r", 4)
+            .attr("fill", d => d.disorder === 1 ? "red" : "green");
+
+        // plot axis
+        const xAxis = d3.axisBottom(xScale)
+            .tickValues([1, 2, 3, 4, 5])
+            .tickFormat(d => cgpaRanges[d]);
+
+        const yAxis = d3.axisLeft(yScale);
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", `translate(0, ${height})`)
+            .call(xAxis);
+
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
+
+        // title
+        svg.append("text")
+            .attr("class", "title")
+            .attr("x", width / 2 - 110)
+            .attr("y", -margin.top / 2 +20)
+            .attr("text-anchor", "middle")
+            .style("font-size", "20px")
+            .style("font-weight", "bold")
+            .text("Mental Health Condition for CGPA and Majors");
+
+        // axis label
+        svg.append("text")
+            .attr("class", "axis-label")
+            .attr("text-anchor", "middle")
+            .attr("transform", `translate(${width / 2}, ${height + margin.bottom / 2})`)
+            .attr("y", -margin.bottom + 95)
+            .attr("x", -width / 30)
+            .style("font-size", "15px")
+            .text("CGPA Range");
+
+        svg.append("text")
+            .attr("class", "axis-label")
+            .attr("text-anchor", "middle")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -margin.left + 20)
+            .attr("x", -height / 2)
+            .style("font-size", "15px")
+            .text("Majors");
+
+        //legend
+        const legendData = ["No Mental Disorder", "Has Mental Disorder"]; 
+        const legendColors = ["green", "red"]; 
+
+        const legend = svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", `translate(${width - 100}, 20)`);
+
+        legend.selectAll("rect")
+            .data(legendData)
+            .enter()
+            .append("rect")
+            .attr("x", 25)
+            .attr("y", (d, i) => i * 20 - 75)
+            .attr("width", 10)
+            .attr("height", 10)
+            .style("fill", (d, i) => legendColors[i]); 
+
+        legend.selectAll("text")
+            .data(legendData)
+            .enter()
+            .append("text")
+            .attr("x", 45)
+            .attr("y", (d, i) => i * 20 - 65)
+            .style("font-size", "12px")
+            .text(d => d);
+// graph3
+
+    // some more data processing, not grahing
+      const gender = ["Female", "Male", "Male", "Female", "Male", "Male", "Female", "Female", "Female", "Male", "Female", "Female", "Female", "Male", "Female", "Male", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Male", "Female", "Female", "Female", "Male", "Male", "Male", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Male", "Male", "Male", "Female", "Female", "Male", "Female", "Female", "Female", "Female", "Female", "Female", "Male", "Male", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Male", "Female", "Female", "Female", "Female", "Female", "Male", "Male", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Male", "Female", "Female", "Female", "Male", "Male", "Female", "Male", "Female", "Female", "Female", "Female", "Female", "Male", "Female", "Female", "Male"];
+      const age = [18, 21, 19, 22, 23, 19, 23, 18, 19, 18, 20, 24, 18, 19, 18, 24, 24, 24, 20, 18, 19, 18, 24, 24, 23, 18, 19, 18, 24, 24, 23, 18, 19, 18, 19, 18, 18, 19, 18, 24, 24, 22, 20, NaN, 23, 18, 19, 18, 24, 24, 23, 18, 19, 20, 19, 21, 23, 20, 18, 23, 18, 19, 18, 24, 24, 23, 18, 19, 18, 24, 24, 18, 19, 18, 24, 24, 19, 19, 23, 18, 19, 18, 24, 24, 23, 18, 19, 18, 24, 18, 21, 18, 19, 23, 20];
+      const year_of_study = ["year 1", "year 2", "Year 1", "year 3", "year 4", "Year 2", "year 2", "year 1", "Year 2", "year 1", "year 1", "Year 3", "year 1", "year 1", "Year 2", "Year 3", "year 3", "year 4", "Year 2", "year 2", "year 1", "Year 2", "year 1", "year 1", "Year 3", "year 1", "year 1", "Year 2", "Year 3", "year 4", "Year 2", "year 2", "year 1", "Year 2", "year 1", "year 1", "Year 3", "year 1", "year 1", "Year 2", "Year 3", "year 4", "year 2", "year 1", "year 2", "year 1", "year 1", "year 4", "year 2", "year 3", "year 1", "year 2", "year 3", "year 3", "year 1", "year 1", "Year 3", "Year 3", "year 1", "year 1", "Year 3", "year 1", "Year 1", "year 1", "year 1", "year 1", "Year 3", "Year 3", "year 1", "year 4", "year 1", "Year 3", "Year 3", "year 1", "Year 3", "year 1", "year 1", "Year 2", "Year 3", "year 4", "Year 2", "year 2", "year 1", "Year 2", "year 1", "year 1", "Year 3", "year 1", "year 1", "Year 2", "Year 3", "Year 2", "year 2", "year 1", "Year 3", "year 1", "year 1", "Year 2", "Year 3", "year 4", "Year 2"];
+      const cgpa = [4, 4, 4, 4, 4, 5, 5, 5, 3, 5, 5, 5, 4, 4, 5, 5, 4, 4, 5, 5, 4, 4, 5, 4, 5, 5, 5, 4, 5, 5, 4, 4, 5, 5, 4, 2, 4, 3, 5, 3, 4, 5, 4, 1, 5, 5, 5, 5, 4, 5, 3, 5, 4, 4, 5, 4, 5, 4, 5, 4, 4, 5, 5, 5, 5, 5, 4, 4, 5, 4, 4, 5, 4, 1, 5, 5, 4, 4, 1, 5, 5, 5, 4, 4, 4, 5, 4, 5, 4, 2, 5, 4, 4, 4, 1, 5, 5, 4, 5, 5, 4];
+      const course = ["engineering", "islamic education", "bit", "laws", "mathemathics", "engineering", "pendidikan islam", "bcs", "human resources", "irkhs", "psychology", "engineering", "bcs", "engineering", "kenms", "bcs", "accounting ", "enm", "bit", "marine science", "engineering", "koe", "bcs", "engineering", "bcs", "banking studies", "engineering", "engineering", "bit", "bcs", "business administration", "bcs", "bcs", "bcs", "bit", "engineering", "law", "bit", "kirkhs", "engineering", "bit", "engineering", "usuluddin ", "bit", "taasl", "bcs", "engineering", "engine", "bcs", "bcs", "ala", "bcs", "biomedical science", "koe", "bcs", "bcs", "kirkhs", "benl", "bcs", "benl", "it", "bcs", "cts", "engin", "engine", "econs", "koe", "mhsc", "malcom", "kop", "biomedical science", "laws", "bit", "biomedical science", "bit", "koe", "engineering", "human sciences ", "biotechnology", "engineering", "communication ", "diploma nursing", "engineering", "pendidikan islam ", "radiography", "psychology", "fiqh fatwa ", "psychology", "bit", "engineering", "diploma tesl", "koe", "koe", "benl", "fiqh", "islamic education", "bcs", "engineering", "nursing ", "pendidikan islam", "biomedical science"];
+      const marital_status = [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0];
+      const illness_count = [2, 1, 3, 1, 0, 1, 2, 1, 0, 2, 0, 1, 1, 0, 1, 0, 0, 3, 1, 3, 1, 0, 0, 0, 3, 0, 0, 2, 3, 0, 0, 0, 1, 2, 3, 0, 2, 3, 0, 2, 1, 0, 1, 0, 1, 2, 1, 0, 1, 1, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 1, 0, 1, 1, 0, 2, 1, 2, 1, 1, 0, 1, 1, 0, 1, 2, 1, 1, 0, 0, 3, 0, 2, 0, 0, 2, 0, 3, 1, 1, 1, 1, 1, 1, 1, 0, 1, 2, 2, 0, 0];
+      const treatment = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      
+      const marital_status_map = {0: "not married",1: "married" };
+      const treatment_map = {0: "no treatment",1: "under treatment" };
+      const cgpa_map = {1: "0-1.99", 2: "1.99-2.49",3:"2.50-2.99",4:"3.00-3.49",5:"3.50-4.50",};
+      
+      const data3 = [];
+      for (let i = 0; i < gender.length; i++) {
+          data3.push({
+              gender: gender[i],
+              age: age[i],
+              year_of_study: year_of_study[i],
+              cgpa: cgpa_map[cgpa[i]],
+              course: course[i],
+              marital_status: marital_status_map[marital_status[i]],
+              illness_count: illness_count[i],
+              treatment: treatment_map[treatment[i]]
+          });
+      }
+
+for (let i = 0; i < gender.length; i++) {
+    data3.push({
+        gender: gender[i],
+        age: age[i],
+        year_of_study: year_of_study[i],
+        cgpa: cgpa[i],
+        course: course[i],
+        marital_status: marital_status_map[marital_status[i]],
+        illness_count: illness_count[i],
+        treatment: treatment_map[treatment[i]]
+    });
+}
+
+// graphing starts here
+    const margin3 = { top: 100, right: 50, bottom: 20, left: 150 },
+      width3 = 1000 - margin3.left - margin3.right,
+      height3 = 500 - margin3.top - margin3.bottom;
+
+    const svg3 = d3.select("#graph3")
+      .append("svg")
+      .attr("width", width3 + margin3.left + margin3.right)
+      .attr("height", height3 + margin3.top + margin3.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin3.left},${margin3.top})`);
+
+      const illnessCountRanges = ["No disorder", "One disorder", "Two disorder", "Three disorder"];
+      const illnessCountScale = d3.scalePoint().domain(illnessCountRanges).range([height3, 0]);
+
+    // scale of y-axis
+    const yScales = {
+      "age": d3.scaleLinear().
+        domain([18, 24])
+        .range([height3, 0]),
+
+      "gender": d3.scalePoint()
+      .domain(["Male", "Female"])
+      .range([height3, 0]),
+
+      "marital_status": d3.scalePoint()
+      .domain(["not married","married"])
+      .range([height3, 0]),
+
+      "year_of_study": d3.scalePoint()
+      .domain(["year 1", "year 2", "year 3", "year 4"])
+      .range([height3, 0]),
+
+      "cgpa": d3.scalePoint()
+      .domain(["0-1.99","1.99-2.49","2.50-2.99","3.00-3.49","3.50-4.50"])
+      .range([height3, 0]),
+
+      "course": d3.scalePoint()
+      .domain(data3.map(d => d.course))
+      .range([height3, 0]),
+
+      "illness_count": d3.scaleLinear()
+      .domain([0,3])
+      .range([height3, 0]),
+
+      "treatment": d3.scalePoint()
+      .domain(["no treatment","under treatment"])
+      .range([height3, 0])
+    };
+
+    //plot axis
+    Object.keys(yScales).forEach((key, i) => {
+      const axis = d3.axisLeft().scale(yScales[key]).ticks(5);
+      svg3.append("g")
+        .attr("transform", `translate(${(i * width3) / 8}, 0)`)
+        .call(axis)
+        .append("text")
+        .attr("class", "axis-label")
+        .attr("x", -10)
+        .attr("y", height3 / 2 )
+        .attr("transform", "rotate(-90)")
+        .style("text-anchor", "middle")
+        .text(key);
+
+  //small title
+  svg3.append("text")
+    .attr("x", (i * width3) / 8)
+    .attr("y", (height3 + margin3.bottom / 2)-20)
+    .attr("text-anchor", "middle")
+    .style("font-size", "10px")
+   // .style("font-weight", "bold")
+    .text(key);
+});
+
+  // connect btw axis
+  data3.forEach(function(d) {
+  Object.keys(yScales).forEach((key, i) => {
+    if (i < Object.keys(yScales).length - 1) {
+      const line = svg3.append("line")
+        .attr("x1", (i * width3) / 8)
+        .attr("y1", yScales[key](d[key]))
+        .attr("x2", ((i + 1) * width3) / 8)
+        .attr("y2", yScales[Object.keys(yScales)[i + 1]](d[Object.keys(yScales)[i + 1]]))
+        .style("stroke-width", 0.3);
+
+      // color lines
+      const illnessCount = d.illness_count;
+      if (illnessCount === 0) {
+        line.style("stroke", "green"); 
+      } else if (illnessCount === 1) {
+        line.style("stroke", "lightcoral"); 
+      } else if (illnessCount === 2) {
+        line.style("stroke", "red");
+      } else if (illnessCount === 3) {
+        line.style("stroke", "darkred");
+      }
+    }
+  });
+});
+
+    // title
+    svg3.append("text")
+      .attr("x", (width3 / 2)-60)
+      .attr("y", -margin3.top/3- 20)
+      .attr("text-anchor", "middle")
+      .style("font-size", "22px")
+      .style("font-weight", "bold")
+      .text("Overview of Student Mental Health");
+      
+  // legend
+  const legend3 = svg3.append("g")
+    .attr("class", "legend")
+    .attr("transform", `translate(${width3 + 20},${height3 / 2})`);
+
+const legendRectSize = 18;
+const legendSpacing = 4;
+
+const illnessCountValues = [0, 1, 2, 3];
+const illnessCountColors = ["green", "lightcoral", "red", "darkred"];
+const legendData3 = ["No Mental Disorder", "One Mental Disorder", "Two Mental Disorders", "Three Mental Disorders"];
+
+legend3.selectAll("rect")
+    .data(illnessCountValues)
+    .enter()
+    .append("rect")
+    .attr("x", -250)
+    .attr("y", (d, i) => i * (legendRectSize + legendSpacing) - height3 / 2 -100)
+    .attr("width", legendRectSize)
+    .attr("height", legendRectSize)
+    .style("fill", (d) => illnessCountColors[d]);
+
+legend3.selectAll("text")
+    .data(legendData3)
+    .enter()
+    .append("text")
+    .attr("x", legendRectSize + legendSpacing-250)
+    .attr("y", (d, i) => i * (legendRectSize + legendSpacing) + legendRectSize / 2 - height3 / 2 -100)
+    .style("font-size", "12px")
+    .text(d => d);
+
+    </script>
+</body>
+</html>
+
