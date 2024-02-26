@@ -1,0 +1,13 @@
+/* Button styling */
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #febb03; 
+    color: rgb(0, 0, 0); 
+    border: none;
+    border-radius: 5px;
+    position: fixed; 
+    bottom: 20px;
+    right: 20px; 
+}
