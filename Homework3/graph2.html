@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Mental Health by major and CGPA</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <style>
+        rect {
+            stroke: #fff;
+        }
+        .axis text {
+            font: 10px sans-serif;
+        }
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+       
+        .x.axis text {
+            text-anchor: end;
+            transform: rotate(-45deg);
+        }
+        .legend {
+            font-size: 12px;
+        }
+        .legend rect {
+            stroke-width: 1;
+            stroke: #000;
+        }
+    </style>
+</head>
+<body>
+    <svg id="heatmap"></svg>
+    <h4>Double click rectangles to see details</h4>
+    <script>
+
+        // graph 2
+        const data =  [ { major: "engineering", cgpa: 4, disorder: 1 },{ major: "islamic education", cgpa: 4, disorder: 1 },{ major: "bit", cgpa: 4, disorder: 1 }, { major: "laws", cgpa: 4, disorder: 1 },{ major: "mathemathics", cgpa: 4, disorder: 0 },{ major: "engineering", cgpa: 5, disorder: 1 },
+                    { major: "pendidikan islam", cgpa: 5, disorder: 1 }, { major: "bcs", cgpa: 5, disorder: 1 }, { major: "human resources", cgpa: 3, disorder: 0 },{ major: "irkhs", cgpa: 5, disorder: 1 },{ major: "psychology", cgpa: 5, disorder: 0 }, { major: "engineering", cgpa: 5, disorder: 1 },{ major: "bcs", cgpa: 4, disorder: 1 },{ major: "engineering", cgpa: 4, disorder: 0 },{ major: "kenms", cgpa: 5, disorder: 1 },
+                    { major: "bcs", cgpa: 5, disorder: 0 },{ major: "accounting", cgpa: 4, disorder: 0 },{ major: "enm", cgpa: 4, disorder: 1 }, { major: "bit", cgpa: 5, disorder: 1 }, { major: "marine science", cgpa: 5, disorder: 1 },{ major: "engineering", cgpa: 4, disorder: 1 },
+                    { major: "koe", cgpa: 4, disorder: 0 }, { major: "bcs", cgpa: 5, disorder: 0 }, { major: "engineering", cgpa: 4, disorder: 0 }, { major: "bcs", cgpa: 5, disorder: 1 }, { major: "banking studies", cgpa: 5, disorder: 0 }, { major: "engineering", cgpa: 5, disorder: 0 },{ major: "engineering", cgpa: 4, disorder: 1 },{ major: "bit", cgpa: 5, disorder: 1 }, { major: "bcs", cgpa: 5, disorder: 0 }, { major: "business administration", cgpa: 4, disorder: 0 },
+                    { major: "bcs", cgpa: 4, disorder: 0 },{ major: "bcs", cgpa: 5, disorder: 1 },{ major: "bcs", cgpa: 5, disorder: 1 }, { major: "bit", cgpa: 4, disorder: 1 }, { major: "engineering", cgpa: 2, disorder: 0 }, { major: "law", cgpa: 4, disorder: 1 },{ major: "bit", cgpa: 3, disorder: 1 },{ major: "kirkhs", cgpa: 5, disorder: 0 },{ major: "engineering", cgpa: 3, disorder: 1 },{ major: "bit", cgpa: 4, disorder: 1 },{ major: "engineering", cgpa: 5, disorder: 0 }, { major: "usuluddin", cgpa: 4, disorder: 1 }, { major: "bit", cgpa: 1, disorder: 0 }, { major: "taasl", cgpa: 5, disorder: 1 },{ major: "bcs", cgpa: 5, disorder: 1 },
+                    { major: "engineering", cgpa: 5, disorder: 1 }, { major: "engine", cgpa: 5, disorder: 0 }, { major: "bcs", cgpa: 4, disorder: 1 },{ major: "bcs", cgpa: 5, disorder: 1 }, { major: "ala", cgpa: 3, disorder: 1 }, { major: "bcs", cgpa: 5, disorder: 1 }, { major: "biomedical science", cgpa: 4, disorder: 0 }, { major: "koe", cgpa: 4, disorder: 1 },{ major: "bcs", cgpa: 5, disorder: 1 }, { major: "bcs", cgpa: 4, disorder: 0 },  { major: "kirkhs", cgpa: 5, disorder: 0 },{ major: "benl", cgpa: 4, disorder: 1 },
+                    { major: "bcs", cgpa: 5, disorder: 0 }, { major: "benl", cgpa: 4, disorder: 0 },{ major: "it", cgpa: 4, disorder: 1 },{ major: "bcs", cgpa: 5, disorder: 0 }, { major: "cts", cgpa: 5, disorder: 1 }, { major: "engin", cgpa: 5, disorder: 1 },  { major: "engine", cgpa: 5, disorder: 0 }, { major: "econs", cgpa: 5, disorder: 1 },{ major: "koe", cgpa: 4, disorder: 1 },{ major: "mhsc", cgpa: 4, disorder: 1 }, { major: "malcom", cgpa: 5, disorder: 1 },{ major: "kop", cgpa: 4, disorder: 1 },
+                    { major: "biomedical science", cgpa: 4, disorder: 0 },  { major: "laws", cgpa: 5, disorder: 1 },  { major: "bit", cgpa: 4, disorder: 1 }, { major: "biomedical science", cgpa: 1, disorder: 0 },  { major: "bit", cgpa: 5, disorder: 1 },{ major: "koe", cgpa: 5, disorder: 1 }, { major: "engineering", cgpa: 4, disorder: 1 }, { major: "human sciences", cgpa: 4, disorder: 1 }, { major: "biotechnology", cgpa: 1, disorder: 0 }, { major: "engineering", cgpa: 5, disorder: 0 },
+                    { major: "communication", cgpa: 5, disorder: 1 },  { major: "diploma nursing", cgpa: 5, disorder: 0 },{ major: "engineering", cgpa: 4, disorder: 1 }, { major: "pendidikan islam", cgpa: 4, disorder: 0 }, { major: "radiography", cgpa: 4, disorder: 0 }, { major: "psychology", cgpa: 5, disorder: 1 }, { major: "fiqh fatwa", cgpa: 4, disorder: 0 },{ major: "psychology", cgpa: 5, disorder: 1 },
+                    { major: "bit", cgpa: 4, disorder: 1 }, { major: "engineering", cgpa: 2, disorder: 1 }, { major: "diploma tesl", cgpa: 5, disorder: 1 },{ major: "koe", cgpa: 4, disorder: 1 },  { major: "koe", cgpa: 4, disorder: 1 }, { major: "benl", cgpa: 4, disorder: 1 }, { major: "fiqh", cgpa: 1, disorder: 1 },
+                    { major: "islamic education", cgpa: 5, disorder: 0 }, { major: "bcs", cgpa: 5, disorder: 1 }, { major: "engineering", cgpa: 4, disorder: 1 }, { major: "nursing", cgpa: 5, disorder: 1 }, { major: "pendidikan islam", cgpa: 5, disorder: 0 }, { major: "biomedical science", cgpa: 4, disorder: 0 }
+                    ];
+
+
+        const margin = { top: 50, right: 150, bottom: 100, left: 100 };
+        const width = 800 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+
+
+        const svg = d3.select("#heatmap")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        const majors = [...new Set(data.map(d => d.major))];
+        const ages = [1, 2, 3, 4, 5];
+
+        //scales
+        const xScale = d3.scaleBand()
+            .domain(majors)
+            .range([0, width])
+            .padding(0.1);
+
+        const yScale = d3.scaleBand()
+            .domain(ages)
+            .range([height, 0])
+            .padding(0.1);
+
+        //axis
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale)
+            .tickValues(ages)
+            .tickFormat(d => {
+                switch (d) {
+                    case 1:
+                        return "0 - 1.99";
+                    case 2:
+                        return "2.00 - 2.49";
+                    case 3:
+                        return "2.50 - 2.99";
+                    case 4:
+                        return "3.00 - 3.49";
+                    case 5:
+                        return "3.50 - 4.00";
+                    default:
+                        return "";
+                }
+            });
+
+
+        //axis lable
+        svg.append("text")
+        .attr("class", "axis-label")
+        .attr("text-anchor", "middle")
+        .attr("transform", `translate(${width / 2}, ${height + margin.bottom / 2})`)
+        .attr("y", -margin.bottom + 130)
+        .attr("x", -width / 30)
+        .style("font-size", "15px")
+        .text("Majors");
+
+        
+        svg.append("text")
+            .attr("class", "axis-label")
+            .attr("text-anchor", "middle")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -margin.left + 20)
+            .attr("x", -height / 2)
+            .style("font-size", "15px")
+            .text("CGPA range");
+
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis)
+            .append("text")
+            .attr("class", "axis-label")
+            .attr("x", width / 2)
+            .attr("y", 40)
+            .style("text-anchor", "middle")
+            .text("Major");
+
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+            .append("text")
+            .attr("class", "axis-label")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -height / 2)
+            .attr("y", -60)
+            .style("text-anchor", "middle")
+            .text("CGPA");
+
+            // title
+            svg.append("text")
+            .attr("class", "title")
+            .attr("x", width / 2 -40)
+            .attr("y", -margin.top / 2 )
+            .attr("text-anchor", "middle")
+            .style("font-size", "20px")
+            .style("font-weight", "bold")
+            .text("Mental Health Condition for CGPA and Majors");
+
+
+
+        //draw rectangles
+        const rects = svg.selectAll(".rect")
+            .data(data)
+            .enter().append("rect")
+            .attr("x", d => xScale(d.major))
+            .attr("y", d => yScale(d.cgpa))
+            .attr("width", xScale.bandwidth())
+            .attr("height", yScale.bandwidth())
+            .style("fill", d => d.disorder === 0 ? "green" : "red")
+            .on("dblclick", function(d) {
+                // Display detailed information upon double-click
+                alert(`CGPA: ${yAxis.tickFormat()(d.cgpa)}, Major: ${d.major}, Presence of Mental Disorder: ${d.disorder === 0 ? "No" : "Yes"}`);
+                d3.event.stopPropagation(); // Prevent zooming when double-clicking
+            });
+
+        //legend
+        const legend = svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", "translate(20,20)");
+
+        const legendRectSize = 18;
+        const legendSpacing = 4;
+
+        const legendRects = legend.selectAll('.legend-rect')
+            .data(["No Mental Disorder", "Have Mental Disorder"])
+            .enter()
+            .append('rect')
+            .attr('class', 'legend-rect')
+            .attr('width', legendRectSize)
+            .attr('height', legendRectSize)
+            .attr('x', 550)
+            .attr('y', (d, i) => i * (legendRectSize + legendSpacing) + 1)
+            .style('fill', (d, i) => i === 0 ? "green" : "red");
+
+        const legendLabels = legend.selectAll('.legend-label')
+            .data(["No Mental Disorder", "Have Mental Disorder"])
+            .enter()
+            .append('text')
+            .attr('class', 'legend-label')
+            .attr('x', 570)
+            .attr('y', (d, i) => i * (legendRectSize + legendSpacing) + 5)
+            .text(d => d)
+            .style('font-size', '12px')
+            .attr('alignment-baseline', 'hanging');
+    </script>
+</body>
+</html>

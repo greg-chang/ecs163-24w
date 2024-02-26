@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amanda Tran Homework 3</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+        }
+
+        .chart-container {
+            margin: 50px;
+            padding: 50px;
+            border-radius: 20px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative; 
+        }
+
+        .chart-title, .label {
+            text-align: center;
+            color: #333;
+            margin: 0 0 20px 0;
+        }
+        
+        .label, .interact {
+            font-size: 10px;
+        }
+
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 8px;
+            font-size: 12px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #sortBarGraph {
+            padding: 10px 20px;
+            margin-top: 30px;
+            cursor: pointer;
+            outline: none;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.3s ease;
+            position: absolute;
+            right: 500px;
+            bottom: 60px; 
+        }
+        
+        #sortBarGraph:hover {
+            background-color: #e2e2e2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Amanda Tran Homework 3</h1>
+    
+    <div class="chart-container" id="parallel-coordinates">
+        <h2 class="chart-title">Parallel Coordinates Chart</h2>
+        <h3 class="label">Brushing + Selection: Types of Product vs Price</h3>
+    </div>
+
+    <div class="chart-container" id="pieChart">
+        <h2 class="chart-title">Pie Chart of Product Distribution</h2>
+        <h3 class="label">Selection: Understanding Breakup of Types of Product</h3>
+    </div>
+    
+    <div class="chart-container" id="bar-graph">
+        <h2 class="chart-title">Bar Graph of Brand Distribution</h2>
+        <h3 class="label">Selection + Sorting: Understanding Brand Distribution</h3>
+        <button id="sortBarGraph">Sort Bar Graph</button>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

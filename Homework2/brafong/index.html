@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Data Dashboard</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .charts-container {
+            display: grid;
+            grid-template-columns: 0fr 0fr; /* Creates two columns */
+            gap: 0px; /* Adds some space between the charts */
+        }
+    </style>
+</head>
+<body>
+    <div id="parallel-coordinates"></div>
+    <div class="charts-container">
+        <div id="bar-chart"></div>
+        <div id="scatter-plot"></div> <!-- Ensure you have this div for the scatter plot -->
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
