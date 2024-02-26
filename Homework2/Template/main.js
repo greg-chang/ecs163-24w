@@ -17,7 +17,7 @@ let teamMargin = {top: 10, right: 30, bottom: 30, left: 60},
     teamWidth = width - teamMargin.left - teamMargin.right,
     teamHeight = height-450 - teamMargin.top - teamMargin.bottom;
 
-//Filter  by column
+
 d3.csv("players.csv").then(rawData =>{
     console.log("rawData", rawData);
     
@@ -110,10 +110,7 @@ d3.csv("players.csv").then(rawData =>{
 
 //plot 2
     
-    q = rawData.reduce((s, { teamID }) => (s[teamID] = (s[teamID] || 0) + 1, s), {});
-    r = Object.keys(q).map((key) => ({ teamID: key, count: q[key] }));
-    console.log(r);
-
+  tell
            
     const g3 = svg.append("g")
                 .attr("width", teamWidth + teamMargin.left + teamMargin.right)
@@ -172,6 +169,7 @@ d3.csv("players.csv").then(rawData =>{
     .attr("width", x2.bandwidth)
     .attr("height", d => teamHeight - y2(d.count))
     .attr("fill", "grey")
+
 
 }).catch(function(error){
     console.log(error);
