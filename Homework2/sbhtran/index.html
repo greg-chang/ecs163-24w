@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Cosmetic Analysis</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            width: 100%; 
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%; 
+            display: flex;
+            flex-direction: column; 
+            align-items: center; 
+            margin-bottom: 40px;
+        }
+        .bar {
+            fill: steelblue;
+        }
+        .bar:hover {
+            fill: orange;
+        }
+        .axis-label {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Samantha Tran's HW 2</h1>
+
+    <h2>Bar Chart (Skin Type)</h2>
+    <div class="chart-container">
+        <div id="bar-chart"></div>
+    </div>
+
+    <h2>Pie Chart (Brand Distribution)</h2>
+    <div class="chart-container">
+        <div id="pie-chart"></div>
+    </div>
+
+    <h2>Parallel Coordinate (Label vs. Price)</h2>
+    <div class="chart-container">
+        <div id="parallel-coordinates-plot"></div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

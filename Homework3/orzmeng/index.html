@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html style="width: 100%; height: 100%;">
+
+<head>
+    <meta charset="utf-8">
+    <title>D3 Visualization Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <style>
+        #top-charts {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        #scatterplot,
+        #barchart {
+            width: 50%;
+            height: 600px;
+        }
+        
+        #sankeychart {
+            width: 100%;
+            margin-top: 50px;
+        }
+        
+        #sankeychart text {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+
+<body style="margin: 0; display: flex; flex-direction: column; align-items: center;">
+    <div id="top-charts" style="display: flex; justify-content: space-between; width: 100%;">
+        <div style="width: 50%;">
+            <div id="scatterplot" style="height: 600px;"></div>
+            <div style="text-align: center; margin-top: 60px;">The scatterplot implements Selection and Brushing functionalities, and it will transmit the selected information to the barchart in real time. The sankeychart achieves View Transition, which allows for camera movement by double-clicking, scrolling,
+                or dragging parts containing text.</div>
+        </div>
+
+        <div style="width: 50%;">
+            <div id="barchart" style="height: 600px;"></div>
+        </div>
+    </div>
+    <div id="sankeychart" style="width: 100%; margin-top: 50px;"></div>
+
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <script src="main.js"></script>
+</body>
+
+
+</html>
