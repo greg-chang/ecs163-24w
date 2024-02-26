@@ -175,4 +175,6 @@ d3.csv("players.csv").then(rawData =>{
 
 }).catch(function(error){
     console.log(error);
+
 });
+
